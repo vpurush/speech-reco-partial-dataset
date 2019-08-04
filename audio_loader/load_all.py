@@ -7,7 +7,7 @@ def loadAllFiles(filter):
     for (dirpath, dirList, fileList) in walk('./recordings'):
         for fileName in fileList:
             if fileName.find(filter) == 0:
-                audioWithPadding, rate = loadWavFile(fileName, path.join(dirpath, fileName), True, 2.1)
-                output.append((audioWithPadding, rate))
+                audioWithPadding, rate = loadWavFile(fileName, path.join(dirpath, fileName), True, 3)
+                output.append((fileName, audioWithPadding, rate))
 
     return output
