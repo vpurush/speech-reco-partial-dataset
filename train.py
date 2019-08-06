@@ -1,8 +1,11 @@
 from audio_loader import loadAllFiles;
 from spectrogram import generateSpectrogram;
+from cnn import generateOutputVariables
 
-audioDataAndRateArray = loadAllFiles('va')
+audioDataAndRateArray = loadAllFiles('chain')
 print("audioDataAndRateArray", audioDataAndRateArray)
 
 for fileName, audioData, rate in audioDataAndRateArray:
-    generateSpectrogram(fileName, audioData, rate)
+    spectrogram = generateSpectrogram(fileName, audioData, rate)
+
+    generateOutputVariables(fileName.split('.')[0])
