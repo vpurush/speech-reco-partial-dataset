@@ -7,8 +7,9 @@ def generateOutputVariables(word):
         twoCharSequence = word[i - 1] + word[i]
         idx = 26 * alphabets.index(word[i - 1]) + alphabets.index(word[i])
         output[idx] = 1
-        print(twoCharSequence, idx, output)
-        getTwoCharSequencesFromOutput(output)
+        # print(twoCharSequence, idx, output)
+
+    return output
 
 
 def getTwoCharSequencesFromOutput(output):
@@ -17,4 +18,5 @@ def getTwoCharSequencesFromOutput(output):
         firstIndex = round(idx / 26)
         secondIndex = idx % 26
 
-        print('TwoCharSequence', alphabets[firstIndex] + alphabets[secondIndex])
+        # print('TwoCharSequence', alphabets[firstIndex] + alphabets[secondIndex])
+
