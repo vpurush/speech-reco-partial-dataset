@@ -1,1 +1,2 @@
-from cnn.gen_output_variables import *
+from cnn.output_variables import *
+from cnn.model import *
