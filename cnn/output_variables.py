@@ -1,7 +1,9 @@
 import numpy
+import math
 
 alphabets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 def generateOutputVariables(word):
+    # print('word', word)
     output = numpy.zeros(26 * 26)
     for i in range(1, len(word)):
         twoCharSequence = word[i - 1] + word[i]
@@ -9,14 +11,24 @@ def generateOutputVariables(word):
         output[idx] = 1
         # print(twoCharSequence, idx, output)
 
+    output = numpy.append(output, [1, 1])
+
+    # print("generateOutputVariables", output)
+
     return output
 
 
 def getTwoCharSequencesFromOutput(output):
-    indices = [idx for idx in range(0, len(output)) if output[idx] == 1]
+    print("getTwoCharSequencesFromOutput", numpy.shape(output))
+    indices = [idx for idx in range(0, len(output)-2) if output[idx] == 1]
+
+    twoCharSequences = []
     for idx in indices:
-        firstIndex = round(idx / 26)
+        firstIndex = math.floor(idx / 26)
         secondIndex = idx % 26
 
-        # print('TwoCharSequence', alphabets[firstIndex] + alphabets[secondIndex])
+        # print('idx', idx, firstIndex, secondIndex)
+        twoCharSequences.append(alphabets[firstIndex] + alphabets[secondIndex])
+    
+    print('TwoCharSequences', twoCharSequences)
 
