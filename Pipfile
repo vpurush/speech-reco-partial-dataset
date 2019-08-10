@@ -12,6 +12,7 @@ numpy = "*"
 speechpy = "*"
 keras = "*"
 tensorflow = "==1.14.0"
+librosa = "*"
 
 [requires]
 python_version = "3.5"
