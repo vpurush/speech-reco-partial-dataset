@@ -6,20 +6,31 @@ import librosa.display
 import numpy
 
 def plotSpectrogram(fileName, spectrogram, transposeData, typ):
-    fig, ax = plt.subplots(figsize=(10, 4))
-    # ax.pcolormesh(numpy.transpose(spectrogram))
     if transposeData:
         spectrogram = numpy.transpose(spectrogram)
+
+
+    fig, ax = plt.subplots(figsize=(10, 4))
+    # ax.pcolormesh(numpy.transpose(spectrogram))
     ax.pcolormesh(spectrogram)
     fig.suptitle(fileName)
     fig.savefig("./output_img/spect/" + fileName + "_" + typ + "_spect.png")
     plt.close(fig)
 
+    # fig = plt.figure(figsize=(10, 4))
+    # librosa.display.specshow(spectrogram,
+    #                          y_axis='mel', fmax=8000,
+    #                          x_axis='time')
+    # plt.colorbar(format='%+2.0f dB')
+    # plt.title('Mel spectrogram')
+    # fig.savefig("./output_img/spect/" + fileName + "_melSpectrogram" + "_spect.png")
+    # plt.close(fig)
+
 
 def generateSpectrogram(fileName, audioData, rate):
     # return
-    frames = spyproc.stack_frames(audioData, rate, 0.02, 0.02)
-    print("frames", frames, frames.shape)
+    # frames = spyproc.stack_frames(audioData, rate, 0.02, 0.02)
+    # print("frames", frames, frames.shape)
 
     # fft = spyproc.fft_spectrum(frames)
     # print("fft", fft, fft.shape)
@@ -57,15 +68,15 @@ def generateSpectrogram(fileName, audioData, rate):
     melPowerSpectrogram = libfeature.melspectrogram(audioData, rate, S=None, n_fft=n_fft, hop_length=n_fft)
     # print("melSpectrogram", melPowerSpectrogram, melPowerSpectrogram.shape)
     melDBSpectrogram = librosa.power_to_db(melPowerSpectrogram, ref=numpy.max)
-    print("melDBSpectrogram", melDBSpectrogram, melDBSpectrogram.shape)
+    # print("melDBSpectrogram", melDBSpectrogram, melDBSpectrogram.shape)
 
     plotSpectrogram(fileName, 
                     melDBSpectrogram, 
                     False, 
                     'melSpectrogram')
 
-    # fig = plt.figure()
-    # librosa.display.specshow(librosa.power_to_db(melSpectrogram,
+    # fig = plt.figure(figsize=(15, 4))
+    # librosa.display.specshow(librosa.power_to_db(melPowerSpectrogram,
     #                                              ref=numpy.max),
     #                          y_axis='mel', fmax=8000,
     #                          x_axis='time')
@@ -75,7 +86,7 @@ def generateSpectrogram(fileName, audioData, rate):
     # plt.close(fig)
     
     melDBSpectrogram = numpy.transpose(melDBSpectrogram)
-    print("melDBSpectrogram after transp", melDBSpectrogram, melDBSpectrogram.shape)
+    # print("melDBSpectrogram after transp", melDBSpectrogram, melDBSpectrogram.shape)
 
 
     return melDBSpectrogram
