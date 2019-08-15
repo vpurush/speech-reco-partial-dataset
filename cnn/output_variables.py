@@ -11,7 +11,7 @@ def generateOutputVariables(word):
         output[idx] = 1
         # print(twoCharSequence, idx, output)
 
-    output = numpy.append(output, [1, 1])
+    # output = numpy.append(output, [1, 1])
 
     # print("generateOutputVariables", output)
 
@@ -20,7 +20,7 @@ def generateOutputVariables(word):
 
 def getTwoCharSequencesFromOutput(output):
     print("getTwoCharSequencesFromOutput", numpy.shape(output))
-    indices = [idx for idx in range(0, len(output)-2) if output[idx] == 1]
+    indices = [idx for idx in range(0, len(output)) if output[idx] == 1]
 
     twoCharSequences = []
     for idx in indices:
@@ -29,6 +29,15 @@ def getTwoCharSequencesFromOutput(output):
 
         # print('idx', idx, firstIndex, secondIndex)
         twoCharSequences.append(alphabets[firstIndex] + alphabets[secondIndex])
+
     
     print('TwoCharSequences', twoCharSequences)
 
+
+def printOutput(output):
+    print("\n\n")
+    for idx in range(0, len(output)):
+        firstIndex = math.floor(idx / 26)
+        secondIndex = idx % 26
+        print("chars", alphabets[firstIndex] + alphabets[secondIndex], output[idx])
+    
