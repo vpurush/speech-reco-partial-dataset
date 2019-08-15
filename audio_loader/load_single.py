@@ -9,7 +9,7 @@ def loadWavFile(fileName, filePath, savePlot, maxAudioLength):
     # print(filePath, rate, data.shape, "audio length", data.shape[0] / rate, data[0])
 
     data, rate = librosa.load(filePath, sr=None)
-    print(filePath, rate, data.shape, "librosa audio length", data.shape[0] / rate, data[0])
+    # print(filePath, rate, data.shape, "librosa audio length", data.shape[0] / rate, data[0])
 
 
     maxDataLength = int(maxAudioLength * rate)
@@ -22,10 +22,10 @@ def loadWavFile(fileName, filePath, savePlot, maxAudioLength):
 
     # data is stereo sound. take left speaker only
     leftSpeakerSound = data # data[:,0]
-    print("leftSpeakerSound.shape", leftSpeakerSound.shape)
+    # print("leftSpeakerSound.shape", leftSpeakerSound.shape)
 
     audioWithPadding = numpy.concatenate((leftSpeakerSound, padding))
-    print("audioWithPadding.shape", audioWithPadding.shape)
+    # print("audioWithPadding.shape", audioWithPadding.shape)
 
     if savePlot:
         fig, ax = plt.subplots()
