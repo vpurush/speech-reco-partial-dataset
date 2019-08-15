@@ -13,6 +13,7 @@ speechpy = "*"
 keras = "*"
 tensorflow = "==1.14.0"
 librosa = "*"
+pydot = "*"
 
 [requires]
 python_version = "3.5"
