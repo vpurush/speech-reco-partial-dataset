@@ -1,10 +1,22 @@
 from audio_loader import loadAllFiles;
 from spectrogram import generateSpectrogram;
-from cnn import generateOutputVariables, getTwoCharSequencesFromOutput, createModel, trainModel, predict
+from cnn import (generateOutputVariables, 
+                getTwoCharSequencesFromOutput, 
+                createModel, 
+                trainModel,
+                predict, 
+                normalizeData, 
+                FunctionalModel)
 import numpy
 
+# normalizeData(numpy.array([
+#     numpy.array([2, 3, 4, 5]),
+#     numpy.array([7, 8, 9, 10])
+# ]))
+
+# exit()
 audioDataAndRateArray = loadAllFiles('ch')
-print("audioDataAndRateArray", audioDataAndRateArray)
+# print("audioDataAndRateArray", audioDataAndRateArray)
 
 # exit()
 trainX = [] # numpy.array([])
@@ -19,9 +31,15 @@ for fileName, audioData, rate in audioDataAndRateArray:
     # trainX = numpy.append(trainX, [spectrogram])
     # trainY = numpy.append(trainY, [outputValues])
 
-createModel()
-trainModel(trainX, trainY)
-yPredictions = predict(trainX)
+# createModel()
+# trainModel(trainX, trainY)
+# yPredictions = predict(trainX)
+
+fModel = FunctionalModel()
+fModel.train(trainX, trainY)
+exit()
+yPredictions = fModel.predict(trainX)
+
 
 for y in yPredictions:
     getTwoCharSequencesFromOutput(y)
