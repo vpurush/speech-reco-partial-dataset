@@ -37,8 +37,8 @@ for fileName, audioData, rate in audioDataAndRateArray:
 
 fModel = FunctionalModel()
 fModel.train(trainX, trainY)
+# yPredictions = fModel.predict(trainX)
 exit()
-yPredictions = fModel.predict(trainX)
 
 
 for y in yPredictions:

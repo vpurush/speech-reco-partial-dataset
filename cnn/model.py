@@ -15,8 +15,13 @@ def createModel():
     if(model == None):
 
         model = Sequential()
-        # model.add(Conv1D(filters=20, kernel_size=3, strides=1, use_bias=False, activation=None, input_shape=(151, 128)))
-        # model.add(AveragePooling1D(pool_size=3, strides=3))
+        conv1 = Conv1D(filters=20, kernel_size=3, strides=1, use_bias=False, activation=None, input_shape=(151,))
+        model.add(conv1)
+        pool1 = AveragePooling1D(pool_size=3, strides=3)
+        model.add(pool1)
+
+        print("shape conv1", conv1.output_shape)
+        print("shape pool1", pool1.output_shape)
         # model.add(Conv1D(filters=10, kernel_size=4, strides=1, use_bias=False, activation=None))
         # model.add(AveragePooling1D(pool_size=2, strides=2))
         # model.add(Conv1D(filters=10, kernel_size=4, strides=1, use_bias=False, activation=None))
@@ -25,11 +30,15 @@ def createModel():
         model.add(Flatten())
         # model.add(Dense(units=(26*26 + 2) * 2, activation='relu'))
         leakyReluActivation = keras.layers.LeakyReLU(alpha=0.3)
-        model.add(Dense(units=26*26 * 2))
+        model.add(Dense(units=26*26 * 4, activation=leakyReluActivation))
         model.add(Dense(units=26*26, activation='sigmoid'))
 
         # sgdOptimizer = SGD(lr=0.01)
-        adamOptimizer = keras.optimizers.Adam()
+        adamOptimizer = keras.optimizers.Adam(lr=0.1)
+
+        # binaryCrossEntropy = keras.losses.binary_crossentropy(y_true, y_pred)
+
+
         model.compile(optimizer=adamOptimizer, loss='mean_squared_error', metrics=['accuracy'])
 
         
@@ -84,11 +93,10 @@ def trainModel(xTrain, yTrain):
     tensorboard_callback = keras.callbacks.TensorBoard(log_dir=logdir)
     model.fit(xtNorm, yt, validation_data=(xtNorm, yt), epochs=5, callbacks=[tensorboard_callback])
 
-
+    print("output at 0", model.layers[0].output)
 
 def predict(xPredict):
-    xp = numpy.array(xPredict)
-    xp = normalizeData(xp)
+    xp = normalizeData(xPredict)
     yPredictions = model.predict(xp)
     # print("max min yPredictions", numpy.max(yPredictions), numpy.min(yPredictions), yPredictions)
     yPredictions = normalizeData(yPredictions)
