@@ -15,12 +15,13 @@ import numpy
 # ]))
 
 # exit()
-audioDataAndRateArray = loadAllFiles('ch')
+audioDataAndRateArray = loadAllFiles('')
 # print("audioDataAndRateArray", audioDataAndRateArray)
 
 # exit()
 trainX = [] # numpy.array([])
 trainY = [] # numpy.array([])
+words = []
 for fileName, audioData, rate in audioDataAndRateArray:
     spectrogram = generateSpectrogram(fileName, audioData, rate)
 
@@ -28,6 +29,7 @@ for fileName, audioData, rate in audioDataAndRateArray:
 
     trainX.append(spectrogram)
     trainY.append(outputValues)
+    words.append(fileName)
     # trainX = numpy.append(trainX, [spectrogram])
     # trainY = numpy.append(trainY, [outputValues])
 
@@ -37,9 +39,11 @@ for fileName, audioData, rate in audioDataAndRateArray:
 
 fModel = FunctionalModel()
 fModel.train(trainX, trainY)
-# yPredictions = fModel.predict(trainX)
-exit()
+yPredictions = fModel.predict(trainX)
+# exit()
 
-
+i = 0
 for y in yPredictions:
+    print("word", words[i])
+    i = i + 1
     getTwoCharSequencesFromOutput(y)

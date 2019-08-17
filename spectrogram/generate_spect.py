@@ -70,10 +70,10 @@ def generateSpectrogram(fileName, audioData, rate):
     melDBSpectrogram = librosa.power_to_db(melPowerSpectrogram, ref=numpy.max)
     # print("melDBSpectrogram", melDBSpectrogram, melDBSpectrogram.shape)
 
-    plotSpectrogram(fileName, 
-                    melDBSpectrogram, 
-                    False, 
-                    'melSpectrogram')
+    # plotSpectrogram(fileName, 
+    #                 melDBSpectrogram, 
+    #                 False, 
+    #                 'melSpectrogram')
 
     # fig = plt.figure(figsize=(15, 4))
     # librosa.display.specshow(librosa.power_to_db(melPowerSpectrogram,
