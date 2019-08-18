@@ -32,5 +32,6 @@ def loadWavFile(fileName, filePath, savePlot, maxAudioLength):
         ax.plot(audioWithPadding)
         fig.suptitle(fileName)
         fig.savefig("./output_img/wav/" + fileName + "_wav.png")
+        plt.close(fig)
 
     return audioWithPadding, rate

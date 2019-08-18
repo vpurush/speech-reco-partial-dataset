@@ -3,7 +3,6 @@ from keras.models import Sequential
 from keras.layers import Conv1D, Flatten, Dense, MaxPooling1D, AveragePooling1D
 from keras.utils import normalize, plot_model
 from datetime import datetime
-from spectrogram import plotSpectrogram
 from cnn import printOutput
 import tensorflow as tf
 import keras
@@ -243,6 +242,13 @@ class FunctionalModel:
             print('Epoch number {} Training Accuracy: {}'.format(i+1, numpy.mean(accHist)))
 
             self.addSummary(xNorm, yShuffled, i)
+            
+        self.saveModel()
+
+    def saveModel(self):
+        saver = tf.compat.v1.train.Saver()
+        save_path = saver.save(self.sess, "checkpoint/model.ckpt")
+        print("Model saved in path: %s" % save_path)
 
 
     def predict(self, xPredict):
