@@ -1,5 +1,6 @@
 from audio_loader import loadAllFiles;
-from spectrogram import generateSpectrogram;
+from spectrogram import (generateSpectrogram,
+                        segmentSpectrogram)
 from cnn import (generateOutputVariables, 
                 getTwoCharSequencesFromOutput, 
                 createModel, 
@@ -48,18 +49,27 @@ testData = generateData(testAudioDataAndRateArray)
 # trainModel(trainX, trainY)
 # yPredictions = predict(trainX)
 
-print("trainingData.shape", trainingData.shape)
-print("trainingData[0, :].shape", trainingData[:, 0].shape)
+# print("trainingData.shape", trainingData.shape)
+# print("trainingData[0, :].shape", trainingData[:, 0].shape)
+
+tempFirstSpectrogram = testData[:, 0][0]
+# print("spectrogram", tempFirstSpectrogram)
+segmentedSpectrogram = segmentSpectrogram(tempFirstSpectrogram, 30)
 
 # exit()
 fModel = FunctionalModel()
-fModel.train(trainingData[:, 0], trainingData[:, 1])
-yPredictions = fModel.predict(testData[:, 0])
+fModel.trainOrRestore(trainingData[:, 0], trainingData[:, 1], False)
+# fModel.trainOrRestore(segmentedSpectrogram, trainingData[:, 1], True)
+# yPredictions = fModel.predict(testData[:, 0])
+yPredictions = fModel.predict(segmentedSpectrogram)
 # exit()
 
+
+# print("training words", trainingData[:, 2])
+print("testing words", testData[:, 2])
 words = testData[:, 2]
 i = 0
 for y in yPredictions:
-    print("word", words[i])
+    # print("word", words[i])
     i = i + 1
     getTwoCharSequencesFromOutput(y)

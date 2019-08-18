@@ -7,11 +7,14 @@ from cnn import printOutput
 import tensorflow as tf
 import keras
 import numpy
+import os.path
 
 def normalize(d):
     min = numpy.amin(d)
     max = numpy.amax(d)
-    dNorm = (d - min)/(max - min) * 2 - 1
+    # print("min max", min, max)
+    dNorm = (d - min)/(1 if (max - min) == 0 else (max - min)) * 2 - 1
+    # print(dNorm, d-min)
     return dNorm
     # return numpy.array([numpy.array([row[0]]) for row in dNorm])
 
@@ -27,7 +30,10 @@ def normalizeData(data):
 
 class FunctionalModel:
 
-    def __init__(self):
+    def __init__(self, charPair = 'ai'):
+        self.charPair = charPair
+        self.checkpointPath = "checkpoint/" + self.charPair + "/"
+        self.checkpointFileName = self.checkpointPath + "model.ckpt"
         self.Ylogits = None
         self.sess = None
         self.createModel()
@@ -149,6 +155,9 @@ class FunctionalModel:
             inputTensor
         )
 
+    def trainOrRestore(self, xTrain, yTrain, forceTrain = False):
+        if(forceTrain or not self.restoreModel()):
+            self.train(xTrain, yTrain)
     
     def train(self, xTrain, yTrain):
         # print("yTrain", yTrain)
@@ -247,18 +256,33 @@ class FunctionalModel:
 
     def saveModel(self):
         saver = tf.compat.v1.train.Saver()
-        save_path = saver.save(self.sess, "checkpoint/model.ckpt")
-        print("Model saved in path: %s" % save_path)
+        save_path = saver.save(self.sess, self.checkpointFileName)
+        print("Model saved in path: " + save_path)
+
+    def restoreModel(self):
+        if os.path.exists(self.checkpointPath):
+            saver = tf.compat.v1.train.Saver()
+            self.sess = tf.compat.v1.Session()
+            saver.restore(self.sess, self.checkpointFileName)
+            print("Model restored from path: " + self.checkpointPath)
+            return True
+        else:
+            print("Model not found in path: " + self.checkpointPath)
+            return False
 
 
     def predict(self, xPredict):
         xp = normalizeData(xPredict)
         xp = numpy.reshape(xp, (-1, 151, 128, 1))
+
+        self.createSummaries(False)
+
+        # yPredictions = self.sess.run(self.Ylogits, feed_dict={self.X: xp})
         yPredictions = self.sess.run(tf.math.round(self.Ylogits), feed_dict={self.X: xp})
 
         yApproximation = []
         for y in yPredictions:
-            # printOutput(y)
+            printOutput(y)
             # yApproximationItem = [1 if yVal > .9 else 0 for yVal in y]
             yApproximationItem = [yVal for yVal in y]
             yApproximation.append(yApproximationItem)
@@ -267,11 +291,13 @@ class FunctionalModel:
 
         return yApproximation
 
-    def createSummaries(self):
+    def createSummaries(self, train = True):
         if(self.sess != None):
-            self.trainLogWriter = tf.compat.v1.summary.FileWriter("logs/train")
-            self.testLogWriter = tf.compat.v1.summary.FileWriter("logs/test")
-            self.trainLogWriter.add_graph(self.sess.graph)
+            if train:
+                self.testTrainLogWriter = tf.compat.v1.summary.FileWriter("logs/train")
+            else:
+                self.testTrainLogWriter = tf.compat.v1.summary.FileWriter("logs/test")
+            self.testTrainLogWriter.add_graph(self.sess.graph)
             
 
             # tf.compat.v1.summary.image("Input", tf.transpose(self.X, perm=[0, 2, 1, 3]))
@@ -321,6 +347,6 @@ class FunctionalModel:
     def addSummary(self, x, y, epoch):
 
         summary = self.sess.run(self.logWriter, feed_dict={self.X: x, self.Y: y})
-        self.trainLogWriter.add_summary(summary, epoch)
-        self.trainLogWriter.flush()
+        self.testTrainLogWriter.add_summary(summary, epoch)
+        self.testTrainLogWriter.flush()
         
