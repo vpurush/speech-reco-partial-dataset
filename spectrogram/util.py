@@ -38,7 +38,7 @@ def segmentSpectrogram(spectrogram, segmentLength, pading=True):
 
         paddedSegment = segment
         if pading:
-            paddedSegment = padSpectrogramSegment(segment, 151, segmentStart)
+            paddedSegment = padSpectrogramSegment(segment, spectrogram.shape[0], 0)
 
         if paddedSegment is not None:
             segments.append(paddedSegment)
@@ -46,3 +46,45 @@ def segmentSpectrogram(spectrogram, segmentLength, pading=True):
     numpySegments = numpy.array(segments)
     print("segments", numpySegments.shape, numpySegments)
     return numpySegments
+
+
+def generateTimeShiftedSpectrogram(spectrogram, y, word, k = 10, paddingConstant = -80.):
+    totalNoOfFrames = spectrogram.shape[0]
+
+    timeShiftedSpectrograms = []
+    timeShiftedSpectrograms.append(numpy.array([spectrogram, y, word]))
+    previousSpectrogram = spectrogram
+
+    while True:
+        lastKFrames = previousSpectrogram[-1 * k:]
+        # print("lastKFrames shape", lastKFrames.shape)
+        min = numpy.amin(lastKFrames)
+        max = numpy.amax(lastKFrames)
+
+        if(min == max and max == paddingConstant):
+            forepart = previousSpectrogram[: -1 * k]
+            previousSpectrogram = numpy.append(lastKFrames, forepart, axis = 0)
+            # print("previousSpectrogram", previousSpectrogram)
+            timeShiftedSpectrograms.append(numpy.array([spectrogram, y, word]))
+        else:
+            break
+    
+    return numpy.array(timeShiftedSpectrograms)
+
+def generateTimeShiftedSpectrogramsForArray(data):
+    # print("data.shape", data.shape) # -1,3 -> 0 is X, 1 is Y, 2 is word
+    timeShiftedSpectrogramsList = None
+
+    for i in range(0, data.shape[0]):
+        dataRow = data[i]
+
+        timeShiftedSpectrograms = generateTimeShiftedSpectrogram(dataRow[0], dataRow[1], dataRow[2])
+        print("timeShiftedSpectrograms shape", timeShiftedSpectrograms.shape)
+
+        if timeShiftedSpectrogramsList is None:
+            timeShiftedSpectrogramsList = timeShiftedSpectrograms
+        else:
+            timeShiftedSpectrogramsList = numpy.append(timeShiftedSpectrogramsList, timeShiftedSpectrograms, axis = 0)
+
+    print("timeShiftedSpectrogramsList shape", timeShiftedSpectrogramsList.shape)
+    return timeShiftedSpectrogramsList

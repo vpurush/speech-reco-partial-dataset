@@ -3,7 +3,7 @@ from keras.models import Sequential
 from keras.layers import Conv1D, Flatten, Dense, MaxPooling1D, AveragePooling1D
 from keras.utils import normalize, plot_model
 from datetime import datetime
-from cnn import printOutput
+from cnn import printOutput, plotMultipleImages
 import tensorflow as tf
 import keras
 import numpy
@@ -30,12 +30,13 @@ def normalizeData(data):
 
 class FunctionalModel:
 
-    def __init__(self, charPair = 'ai'):
+    def __init__(self, charPair = 'ai', noOfEpoch = 20):
         self.charPair = charPair
         self.checkpointPath = "checkpoint/" + self.charPair + "/"
         self.checkpointFileName = self.checkpointPath + "model.ckpt"
         self.Ylogits = None
         self.sess = None
+        self.noOfEpoch = noOfEpoch
         self.createModel()
 
     def createModel(self):
@@ -49,14 +50,16 @@ class FunctionalModel:
                 x = self.X
                 
             with tf.name_scope('conv1') as scope:
-                kernelInitializer = keras.initializers.Constant(value=1)
+                # kernelInitializer = keras.initializers.Constant(value=1)
                 self.conv1 = tf.compat.v1.keras.layers.Conv2D(
                     filters=5, 
                     kernel_size=(3, 3),
                     strides=(1, 1),
                     activation=None, 
                     data_format='channels_last',
-                    kernel_initializer=kernelInitializer)(x)
+                    # kernel_initializer=kernelInitializer,
+                    kernel_initializer='random_uniform',
+                )(x)
                 self.pool1 = tf.compat.v1.keras.layers.MaxPooling2D(
                     pool_size=(2,2),
                     strides=(2,2),
@@ -76,7 +79,8 @@ class FunctionalModel:
                     strides=(1, 1),
                     activation=None, 
                     data_format='channels_last',
-                    kernel_initializer=kernelInitializer)(x)
+                    kernel_initializer=kernelInitializer
+                )(x)
                 self.pool2 = tf.compat.v1.keras.layers.MaxPooling2D(
                     pool_size=(2,2),
                     strides=(2,2),
@@ -162,7 +166,6 @@ class FunctionalModel:
     def train(self, xTrain, yTrain):
         # print("yTrain", yTrain)
 
-        noOfEpoch = 30
 
         self.sess = tf.compat.v1.Session()
         init = tf.compat.v1.global_variables_initializer()
@@ -173,7 +176,7 @@ class FunctionalModel:
         self.createSummaries()
 
         accHist = []
-        for i in range(0, noOfEpoch):
+        for i in range(0, self.noOfEpoch):
             indices = tf.range(start=0, limit=len(xTrain), dtype=tf.int32)
             # print("indices", indices)
             shuffledIndices = tf.random.shuffle(indices)
@@ -250,9 +253,19 @@ class FunctionalModel:
 
             print('Epoch number {} Training Accuracy: {}'.format(i+1, numpy.mean(accHist)))
 
+            self.saveImages(self.pool2, "pool2", xNorm, yShuffled)
+            self.saveImages(self.pool1, "pool1", xNorm, yShuffled)
+
             self.addSummary(xNorm, yShuffled, i)
             
         self.saveModel()
+
+    def saveImages(self, layer, layerName, x, y):
+        data = self.sess.run(
+                    layer, 
+                    feed_dict={self.X: x, self.Y: y}
+                )
+        plotMultipleImages(layerName, data)
 
     def saveModel(self):
         saver = tf.compat.v1.train.Saver()

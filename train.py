@@ -1,6 +1,8 @@
 from audio_loader import loadAllFiles;
 from spectrogram import (generateSpectrogram,
-                        segmentSpectrogram)
+                        segmentSpectrogram,
+                        generateTimeShiftedSpectrogram,
+                        generateTimeShiftedSpectrogramsForArray)
 from cnn import (generateOutputVariables, 
                 getTwoCharSequencesFromOutput, 
                 createModel, 
@@ -52,16 +54,17 @@ testData = generateData(testAudioDataAndRateArray)
 # print("trainingData.shape", trainingData.shape)
 # print("trainingData[0, :].shape", trainingData[:, 0].shape)
 
-tempFirstSpectrogram = testData[:, 0][0]
+tempFirstSpectrogram = testData[:, 0][2]
+timeShiftedTrainingData = generateTimeShiftedSpectrogramsForArray(trainingData)
 # print("spectrogram", tempFirstSpectrogram)
 segmentedSpectrogram = segmentSpectrogram(tempFirstSpectrogram, 30)
 
-# exit()
 fModel = FunctionalModel()
-fModel.trainOrRestore(trainingData[:, 0], trainingData[:, 1], False)
+# fModel.trainOrRestore(trainingData[:, 0], trainingData[:, 1], False)
+fModel.trainOrRestore(timeShiftedTrainingData[:, 0], timeShiftedTrainingData[:, 1], False)
 # fModel.trainOrRestore(segmentedSpectrogram, trainingData[:, 1], True)
-# yPredictions = fModel.predict(testData[:, 0])
-yPredictions = fModel.predict(segmentedSpectrogram)
+yPredictions = fModel.predict(testData[:, 0])
+# yPredictions = fModel.predict(segmentedSpectrogram)
 # exit()
 
 
