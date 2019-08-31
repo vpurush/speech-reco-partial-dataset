@@ -60,7 +60,7 @@ class FunctionalModel:
                     # kernel_initializer=kernelInitializer,
                     kernel_initializer='random_uniform',
                 )(x)
-                self.pool1 = tf.compat.v1.keras.layers.MaxPooling2D(
+                self.pool1 = tf.compat.v1.keras.layers.AveragePooling2D(
                     pool_size=(2,2),
                     strides=(2,2),
                     padding="valid")(self.conv1)
@@ -79,9 +79,10 @@ class FunctionalModel:
                     strides=(1, 1),
                     activation=None, 
                     data_format='channels_last',
-                    kernel_initializer=kernelInitializer
+                    # kernel_initializer=kernelInitializer
+                    kernel_initializer='random_uniform'
                 )(x)
-                self.pool2 = tf.compat.v1.keras.layers.MaxPooling2D(
+                self.pool2 = tf.compat.v1.keras.layers.AveragePooling2D(
                     pool_size=(2,2),
                     strides=(2,2),
                     padding="valid")(self.conv2)
@@ -98,29 +99,45 @@ class FunctionalModel:
 
             with tf.name_scope('fullyConnectedLayerOne') as scope:
                 print("x.shape", x.shape)
-                self.fc1InitialWeights = tf.random.truncated_normal([1080, 100], stddev=1e-1, name="fc1InitialWeights")
+                self.fc1InitialWeights = tf.random.truncated_normal([1080, 500], stddev=1e-1, name="fc1InitialWeights")
                 self.fc1Weight = tf.Variable(self.fc1InitialWeights, name="fc1Weights")
 
-                self.fc1InitialBias = tf.constant(0.0, shape=[100], name="fc1InitialBias")
+                self.fc1InitialBias = tf.constant(0.0, shape=[500], name="fc1InitialBias")
                 self.fc1Bias = tf.Variable(self.fc1InitialBias, trainable=True, name="fc1Bias")
 
                 matMulAddBias = tf.nn.bias_add(tf.matmul(x, self.fc1Weight), self.fc1Bias)
                 self.fc1 = matMulAddBias
                 x = self.fc1
-                self.fc1 = tf.math.sigmoid(matMulAddBias, name="fc1")
+                self.fc1 = tf.math.tanh(matMulAddBias, name="fc1")
+                # self.fc1 = tf.compat.v1.keras.layers.Dropout(0.1, noise_shape=None, seed=None)(self.fc1)
+
                 self.Ylogits = self.fc1
 
             with tf.name_scope('fullyConnectedLayerTwo') as scope:
                 print("x.shape", x.shape)
-                self.fc2InitialWeights = tf.random.truncated_normal([100, 1], name="fc2InitialWeights")
+                self.fc2InitialWeights = tf.random.truncated_normal([500, 100], name="fc2InitialWeights")
                 self.fc2Weight = tf.Variable(self.fc2InitialWeights, name="fc2Weights")
 
-                self.fc2InitialBias = tf.constant(0.0, shape=[1], name="fc2InitialBias")
+                self.fc2InitialBias = tf.constant(0.0, shape=[100], name="fc2InitialBias")
                 self.fc2Bias = tf.Variable(self.fc2InitialBias, trainable=True, name="fc2Bias")
 
                 matMulAddBias = tf.nn.bias_add(tf.matmul(self.fc1, self.fc2Weight), self.fc2Bias)
-                self.fc2 = tf.math.sigmoid(matMulAddBias, name="fc2")
+                self.fc2 = matMulAddBias
+                self.fc2 = tf.math.tanh(matMulAddBias, name="fc2")
+                # self.fc2 = tf.compat.v1.keras.layers.Dropout(0.1, noise_shape=None, seed=None)(self.fc2)
                 self.Ylogits = self.fc2
+
+            with tf.name_scope('fullyConnectedLayerThree') as scope:
+                print("x.shape", x.shape)
+                self.fc3InitialWeights = tf.random.truncated_normal([100, 1], name="fc3InitialWeights")
+                self.fc3Weight = tf.Variable(self.fc3InitialWeights, name="fc3Weights")
+
+                self.fc3InitialBias = tf.constant(0.0, shape=[1], name="fc3InitialBias")
+                self.fc3Bias = tf.Variable(self.fc3InitialBias, trainable=True, name="fc3Bias")
+
+                matMulAddBias = tf.nn.bias_add(tf.matmul(self.fc2, self.fc3Weight), self.fc3Bias)
+                self.fc3 = tf.math.sigmoid(matMulAddBias, name="fc3")
+                self.Ylogits = self.fc3
 
             with tf.name_scope('crossEntropy'):
                 self.crossEntropy = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.Ylogits, labels=self.Y)
@@ -219,6 +236,10 @@ class FunctionalModel:
             #     tf.reduce_max(self.flattenedLayer), 
             #     feed_dict={self.X: xNorm, self.Y: yShuffled})
             # print("reduceMax outpu", reduceMax, reduceMax.shape)
+            fc1 = self.sess.run(
+                self.fc1, 
+                feed_dict={self.X: xNorm, self.Y: yShuffled})
+            print("fc1", fc1, fc1.shape)
             Ylogits = self.sess.run(
                 self.Ylogits, 
                 feed_dict={self.X: xNorm, self.Y: yShuffled})
@@ -231,17 +252,17 @@ class FunctionalModel:
             equal = self.sess.run(
                 tf.equal(tf.math.round(self.Ylogits), self.Y),
                 feed_dict={self.X: xNorm, self.Y: yShuffled})
-            reduceMean = self.sess.run(
-                tf.reduce_mean(tf.cast(tf.equal(self.Ylogits, self.Y), tf.float32)),
-                feed_dict={self.X: xNorm, self.Y: yShuffled})
+            # reduceMean = self.sess.run(
+            #     tf.reduce_mean(tf.cast(tf.equal(self.Ylogits, self.Y), tf.float32)),
+            #     feed_dict={self.X: xNorm, self.Y: yShuffled})
             # print("equal outpu", Ylogits, Y, YlogitsRound, equal,  Ylogits.shape)
-            lossFunction = self.sess.run(
-                self.lossFunction, 
-                feed_dict={self.X: xNorm, self.Y: yShuffled})
+            # lossFunction = self.sess.run(
+            #     self.lossFunction, 
+            #     feed_dict={self.X: xNorm, self.Y: yShuffled})
             # print("lossFunction outpu", lossFunction, lossFunction.shape)
-            crossEntropy = self.sess.run(
-                self.crossEntropy, 
-                feed_dict={self.X: xNorm, self.Y: yShuffled})
+            # crossEntropy = self.sess.run(
+            #     self.crossEntropy, 
+            #     feed_dict={self.X: xNorm, self.Y: yShuffled})
             # print("crossEntropy outpu", crossEntropy, crossEntropy.shape)
             # correctPrediction = self.sess.run(
             #     self.correctPrediction, 
@@ -251,12 +272,16 @@ class FunctionalModel:
             acc = self.sess.run([self.accuracy], feed_dict={self.X: xNorm, self.Y: yShuffled})
             accHist.append(acc)
 
-            print('Epoch number {} Training Accuracy: {}'.format(i+1, numpy.mean(accHist)))
+            meanAcc = numpy.mean(accHist)
+            print('Epoch number {} Training Accuracy: {}'.format(i+1, meanAcc))
 
             self.saveImages(self.pool2, "pool2", xNorm, yShuffled)
             self.saveImages(self.pool1, "pool1", xNorm, yShuffled)
 
             self.addSummary(xNorm, yShuffled, i)
+
+            if(meanAcc > .78 and i >= 5):
+                break
             
         self.saveModel()
 
@@ -290,8 +315,8 @@ class FunctionalModel:
 
         self.createSummaries(False)
 
-        # yPredictions = self.sess.run(self.Ylogits, feed_dict={self.X: xp})
-        yPredictions = self.sess.run(tf.math.round(self.Ylogits), feed_dict={self.X: xp})
+        yPredictions = self.sess.run(self.Ylogits, feed_dict={self.X: xp})
+        # yPredictions = self.sess.run(tf.math.round(self.Ylogits), feed_dict={self.X: xp})
 
         yApproximation = []
         for y in yPredictions:
@@ -318,7 +343,7 @@ class FunctionalModel:
             # tf.compat.v1.summary.image("Conv1", self.getImageFromConvAt(self.conv1, 0), max_outputs=11)
             # tf.compat.v1.summary.image("Pool1", self.pool1, max_outputs=11)
             # tf.compat.v1.summary.image("Conv1", self.conv2, max_outputs=11)
-            tf.compat.v1.summary.image("Pool1", self.pool2, max_outputs=11)
+            # tf.compat.v1.summary.image("Pool1", self.pool2, max_outputs=11)
 
             # tf.compat.v1.summary.scalar('Loss', self.lossFunction)
             # tf.compat.v1.summary.scalar('cross_entropy', self.crossEntropy)
