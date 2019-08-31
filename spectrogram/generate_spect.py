@@ -65,10 +65,10 @@ def generateSpectrogram(fileName, audioData, rate):
     # Here n_fft is frame length?
     n_fft = int(0.02 * rate)
     # hop_length=n_fft means no overlap between frames
-    melPowerSpectrogram = libfeature.melspectrogram(audioData, rate, S=None, n_fft=n_fft, hop_length=n_fft)
-    # print("melSpectrogram", melPowerSpectrogram, melPowerSpectrogram.shape)
+    melPowerSpectrogram = libfeature.melspectrogram(audioData, rate, S=None, n_fft=n_fft, hop_length=n_fft, n_mels=128)
+    # print("melSpectrogram", melPowerSpectrogram.shape)
     melDBSpectrogram = librosa.power_to_db(melPowerSpectrogram, ref=numpy.max)
-    # print("melDBSpectrogram", melDBSpectrogram, melDBSpectrogram.shape)
+    # print("melDBSpectrogram", melDBSpectrogram.shape)
 
     # plotSpectrogram(fileName, 
     #                 melDBSpectrogram, 

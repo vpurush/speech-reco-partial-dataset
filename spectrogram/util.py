@@ -31,8 +31,10 @@ def segmentSpectrogram(spectrogram, segmentLength, pading=True):
     # print("spectrogram shape", spectrogram.shape, int(spectrogram.shape[0] / segmentLength))
 
     segments = []
-    for i in range(0, int(spectrogram.shape[0] / segmentLength) + 1):
-        segmentStart = i * segmentLength
+    i = 0
+    while i <= int(spectrogram.shape[0] / segmentLength):
+        segmentStart = int(i * segmentLength)
+        print("segmentStart", segmentStart)
         segment = spectrogram[segmentStart : segmentStart + segmentLength, :]
         # print("segment inside itr", segment.shape, segment)
 
@@ -42,6 +44,8 @@ def segmentSpectrogram(spectrogram, segmentLength, pading=True):
 
         if paddedSegment is not None:
             segments.append(paddedSegment)
+
+        i = i + 0.5
 
     numpySegments = numpy.array(segments)
     print("segments", numpySegments.shape, numpySegments)
@@ -79,7 +83,7 @@ def generateTimeShiftedSpectrogramsForArray(data):
         dataRow = data[i]
 
         timeShiftedSpectrograms = generateTimeShiftedSpectrogram(dataRow[0], dataRow[1], dataRow[2])
-        print("timeShiftedSpectrograms shape", timeShiftedSpectrograms.shape)
+        # print("timeShiftedSpectrograms shape", timeShiftedSpectrograms.shape)
 
         if timeShiftedSpectrogramsList is None:
             timeShiftedSpectrogramsList = timeShiftedSpectrograms
