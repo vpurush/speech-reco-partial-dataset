@@ -10,6 +10,9 @@ from cnn import (generateOutputVariables,
                 predict, 
                 normalizeData, 
                 FunctionalModel)
+from extract_feature import (compareTwoSpect,
+                            getComparisonMatrix,
+                            startSpectComparison)
 import numpy
 
 # normalizeData(numpy.array([
@@ -47,6 +50,10 @@ def generateData(audioDataAndRateArray):
 trainingData = generateData(trainAudioDataAndRateArray)
 testData = generateData(testAudioDataAndRateArray)
 
+startSpectComparison(trainingData[:, 0])
+
+print("training words", trainingData[:, 2])
+exit()
 # createModel()
 # trainModel(trainX, trainY)
 # yPredictions = predict(trainX)
@@ -54,14 +61,14 @@ testData = generateData(testAudioDataAndRateArray)
 # print("trainingData.shape", trainingData.shape)
 # print("trainingData[0, :].shape", trainingData[:, 0].shape)
 
-tempFirstSpectrogram = testData[:, 0][2]
+# tempFirstSpectrogram = testData[:, 0][3]
 timeShiftedTrainingData = generateTimeShiftedSpectrogramsForArray(trainingData)
 # print("spectrogram", tempFirstSpectrogram)
-segmentedSpectrogram = segmentSpectrogram(tempFirstSpectrogram, 30)
+# segmentedSpectrogram = segmentSpectrogram(tempFirstSpectrogram, 151)
 
 fModel = FunctionalModel()
-# fModel.trainOrRestore(trainingData[:, 0], trainingData[:, 1], False)
-fModel.trainOrRestore(timeShiftedTrainingData[:, 0], timeShiftedTrainingData[:, 1], False)
+fModel.trainOrRestore(trainingData[:, 0], trainingData[:, 1], True)
+# fModel.trainOrRestore(timeShiftedTrainingData[:, 0], timeShiftedTrainingData[:, 1], False)
 # fModel.trainOrRestore(segmentedSpectrogram, trainingData[:, 1], True)
 yPredictions = fModel.predict(testData[:, 0])
 # yPredictions = fModel.predict(segmentedSpectrogram)
