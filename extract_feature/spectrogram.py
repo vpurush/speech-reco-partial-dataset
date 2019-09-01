@@ -1,10 +1,11 @@
 import numpy
+from extract_feature import selectRandomKFromCombinations
 
-def compareTwoSpect(spect1, spect2, frameCount = 4):
+def compareTwoSpect(spect1, spect2, frameCount):
     (start1, end1) = findValidStartEnd(spect1)
     (start2, end2) = findValidStartEnd(spect2)
 
-    print("start end", start1, end1, start2, end2, spect1.shape)
+    # print("start end", start1, end1, start2, end2, spect1.shape)
 
     comparisonList = []
     for i in range(start1, end1 - frameCount + 1):
@@ -19,20 +20,20 @@ def compareTwoSpect(spect1, spect2, frameCount = 4):
             comparisonList.append((comparisonScore, i, j))
 
     # print("comparisonList", comparisonList)
-    comparisonList = comparisonList[0:10]
+    comparisonList = comparisonList[0:3]
     sortedComparisonList = sorted(comparisonList, key=lambda x: x[0])
-    print("sortedComparisonList", sortedComparisonList)
+    # print("sortedComparisonList", sortedComparisonList)
 
     return sortedComparisonList
 
 
-def getComparisonMatrix(spectArray):
+def getComparisonMatrix(spectArray, frameCount):
     comparisonMatrix = {}
     for i in range(0, spectArray.shape[0]):
         for j in range(i + 1, spectArray.shape[0]):
             if i != j:
-                comparison = compareTwoSpect(spectArray[i], spectArray[j])
-                comparisonInReverse = compareTwoSpect(spectArray[j], spectArray[i])
+                comparison = compareTwoSpect(spectArray[i], spectArray[j], frameCount)
+                comparisonInReverse = compareTwoSpect(spectArray[j], spectArray[i], frameCount)
                 if i not in comparisonMatrix:
                     comparisonMatrix[i] = {}
                 if j not in comparisonMatrix:
@@ -41,7 +42,7 @@ def getComparisonMatrix(spectArray):
                 comparisonMatrix[i][j] = comparison
                 comparisonMatrix[j][i] = comparisonInReverse
 
-    print("comparisonMatrix", comparisonMatrix)
+    # print("comparisonMatrix", comparisonMatrix)
     return comparisonMatrix
 
 def findBestPair(spectArrayLen, comparisonMatrix, index = 0, framePositionList = None, visited = []):
@@ -75,7 +76,7 @@ def findBestPair(spectArrayLen, comparisonMatrix, index = 0, framePositionList =
 
                         innerMasterComparisonList = findBestPair(spectArrayLen, comparisonMatrix, key, clonedFramePositionList, clonedVisited)
                         for innerMasterComparison in innerMasterComparisonList:
-                            print("innerMasterComparison", innerMasterComparison)
+                            # print("innerMasterComparison", innerMasterComparison)
                             comparisonScore = comparison[0] + innerMasterComparison[0]
                             masterIndexList = [comparison[1]]
                             for innerMasterIndex in innerMasterComparison[1]:
@@ -90,22 +91,75 @@ def findBestPair(spectArrayLen, comparisonMatrix, index = 0, framePositionList =
         masterComparisonList.append((0., [framePositionLeft], clonedVisited))
 
     sortedMasterComparisonList = sorted(masterComparisonList, key=lambda x: x[0])
-    print("sortedMasterComparisonList", index, sortedMasterComparisonList, clonedVisited)
+    # print("sortedMasterComparisonList", len(sortedMasterComparisonList))
     return sortedMasterComparisonList
                     
 
+def findBestBatch(spectArray, frameCount):
+    randomKCombinationList = selectRandomKFromCombinations(range(0, spectArray.shape[0]))
+    batchList = []
+
+    for combi in randomKCombinationList:
+        subsetKSpectArray = spectArray[combi]
+
+        comparisonMatrix = getComparisonMatrix(subsetKSpectArray, frameCount)
+
+        sortedMasterComparisonList = findBestPair(subsetKSpectArray.shape[0], comparisonMatrix)
+        bestPair = sortedMasterComparisonList[0]
+        (bestPairComparisonScore, bestPairStartIndices, bestPairSpectIndices) = bestPair
+        # print("bestPair", bestPair, bestPairComparisonScore, bestPairStartIndices, bestPairSpectIndices)
+
+        nFramesList = []
+        for i in range(0, len(bestPairSpectIndices)):
+            spectIndex = bestPairSpectIndices[i]
+            startIndex = bestPairStartIndices[i]
+            # print("spectIndex", spectIndex)
+            nFrames = subsetKSpectArray[spectIndex][startIndex: startIndex + frameCount]
+            nFramesList.append(nFrames)
+            # print("nFrames.shape", nFrames.shape)
+
+        nFramesList = numpy.array(nFramesList)
+        # print("nFramesList.shape", nFramesList.shape)
+
+        batchList.append(numpy.array([bestPairComparisonScore, nFramesList]))
+
+    sortedBatchList = sorted(batchList, key=lambda x: x[0])
+    sortedBatchList = numpy.array(sortedBatchList)
+    # print("sortedBatchList", sortedBatchList, sortedBatchList.shape)
+
+    output = numpy.array(sortedBatchList[:,1])
+    print("output", output, output.shape)
+
+    return output
+        
 
 
-def startSpectComparison(spectArray):
+def getSpectNFrames(spectArray, frameCount = 4):
     # print("spectArray.shape", spectArray.shape)
+
+    return findBestBatch(spectArray, frameCount)
+    return
+
+    nFramesList = []
     if spectArray.shape[0] > 1:
-        comparisonMatrix = getComparisonMatrix(spectArray)
-        findBestPair(spectArray.shape[0], comparisonMatrix)
+        comparisonMatrix = getComparisonMatrix(spectArray, frameCount)
+        # return
+        sortedMasterComparisonList = findBestPair(spectArray.shape[0], comparisonMatrix)
+        bestPair = sortedMasterComparisonList[0]
+
+        for i in range(0, len(bestPair[2])):
+            spectIndex = bestPair[2][i]
+            startIndex = bestPair[1][i]
+            print("spectIndex", spectIndex)
+            nFrames = spectArray[spectIndex][spectIndex: spectIndex + frameCount]
+            nFramesList.append(nFrames)
+
+    return numpy.array(nFramesList)
 
 def frameContainsValidInfo(frame):
     var = numpy.var(frame)
-    print("var", var)
-    return var > 250
+    # print("var", var)
+    return var > 220
 
 def findValidStartEnd(spect):
     start = -1
