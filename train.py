@@ -12,7 +12,7 @@ from cnn import (generateOutputVariables,
                 FunctionalModel)
 from extract_feature import (compareTwoSpect,
                             getComparisonMatrix,
-                            startSpectComparison)
+                            getSpectNFrames)
 import numpy
 
 # normalizeData(numpy.array([
@@ -50,7 +50,31 @@ def generateData(audioDataAndRateArray):
 trainingData = generateData(trainAudioDataAndRateArray)
 testData = generateData(testAudioDataAndRateArray)
 
-startSpectComparison(trainingData[:, 0])
+
+def generateTrainingDataForDTree(tDataList):
+    twoCharSequenceList = ['ai', 'ch']
+    trainingDataDict = {}
+    for twoCharSequence in twoCharSequenceList:
+        dataForTwoCharSequence = []
+        for tData in tDataList:
+            (spectrogram, outputValues, fileName) = tData
+            if(fileName.find(twoCharSequence) != -1):
+                dataForTwoCharSequence.append(spectrogram)
+
+        trainingDataDict[twoCharSequence] = numpy.array(dataForTwoCharSequence)
+
+    return trainingDataDict
+
+trainingDataDict = generateTrainingDataForDTree(trainingData)
+
+for key in trainingDataDict:
+    print("shape:" + key, trainingDataDict[key].shape)
+print("trainingDataDict", trainingDataDict)
+
+exit()
+
+nFramesList = getSpectNFrames(trainingData[:, 0], 6)
+print("nFramesList.shape", nFramesList.shape)
 
 print("training words", trainingData[:, 2])
 exit()
