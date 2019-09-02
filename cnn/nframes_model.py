@@ -9,30 +9,30 @@ import keras
 import numpy
 import os.path
 
-# def normalize(d):
-#     min = numpy.amin(d)
-#     max = numpy.amax(d)
-#     # print("min max", min, max)
-#     dNorm = (d - min)/(1 if (max - min) == 0 else (max - min)) * 2 - 1
-#     # print(dNorm, d-min)
-#     return dNorm
-#     # return numpy.array([numpy.array([row[0]]) for row in dNorm])
+def normalize(d):
+    min = numpy.amin(d)
+    max = numpy.amax(d)
+    # print("min max", min, max)
+    dNorm = (d - min)/(1 if (max - min) == 0 else (max - min)) * 2 - 1
+    # print(dNorm, d-min)
+    return dNorm
+    # return numpy.array([numpy.array([row[0]]) for row in dNorm])
 
-# def normalizeData(data):
-#     # print("shape normalizeData", data.shape)
+def normalizeData(data):
+    # print("shape normalizeData", data.shape)
 
-#     normValues = []
-#     for d in data:
-#         dNorm = normalize(d)
-#         normValues.append(dNorm)
+    normValues = []
+    for d in data:
+        dNorm = normalize(d)
+        normValues.append(dNorm)
 
-#     return numpy.array(normValues)
+    return numpy.array(normValues)
 
 class NFramesModel:
 
     def __init__(self, charPair = 'ai', noOfEpoch = 20):
         self.charPair = charPair
-        self.checkpointPath = "checkpoint/nFrames/" + self.charPair + "/"
+        self.checkpointPath = "checkpoint/nframes/" + self.charPair + "/"
         self.checkpointFileName = self.checkpointPath + "model.ckpt"
         self.Ylogits = None
         self.sess = None
@@ -44,23 +44,63 @@ class NFramesModel:
         if(self.Ylogits == None):
         
             with tf.name_scope('inputAndOutput') as scope:
-                self.X = tf.compat.v1.placeholder(tf.float32, shape=[None, 6, 128], name="X")
+                self.X = tf.compat.v1.placeholder(tf.float32, shape=[None, 4, 128, 1], name="X")
                 self.Y = tf.compat.v1.placeholder(tf.float32, [None, 1], name="Y")
                 x = self.X
+                
+            with tf.name_scope('conv1') as scope:
+                # kernelInitializer = keras.initializers.Constant(value=1)
+                self.conv1 = tf.compat.v1.keras.layers.Conv2D(
+                    filters=1, 
+                    kernel_size=(2, 2),
+                    strides=(1, 1),
+                    activation=None, 
+                    data_format='channels_last',
+                    # kernel_initializer=kernelInitializer,
+                    kernel_initializer='random_uniform',
+                )(x)
+                self.pool1 = tf.compat.v1.keras.layers.AveragePooling2D(
+                    pool_size=(2,2),
+                    strides=(2,1),
+                    padding="same")(self.conv1)
+                # self.conv1Flattening = tf.compat.v1.layers.Flatten(name="conv1Flattening")(self.pool1)
+                x = self.pool1
+
+                print("conv1 shape", self.conv1.shape)
+                print("pool1 shape", self.pool1.shape)
+                # print("conv1Flattening shape", self.conv1Flattening.shape)
+                
+            with tf.name_scope('conv2') as scope:
+                kernelInitializer = keras.initializers.Constant(value=1)
+                self.conv2 = tf.compat.v1.keras.layers.Conv2D(
+                    filters=1, 
+                    kernel_size=(1, 1),
+                    strides=(1, 1),
+                    activation=None, 
+                    data_format='channels_last',
+                    # kernel_initializer=kernelInitializer
+                    kernel_initializer='random_uniform'
+                )(x)
+                self.pool2 = tf.compat.v1.keras.layers.AveragePooling2D(
+                    pool_size=(2,2),
+                    strides=(2,1),
+                    padding="valid")(self.conv2)
+                x = self.pool2
+                
+                print("conv2 shape", self.conv2.shape)
+                print("pool2 shape", self.pool2.shape)
                 
                 
             with tf.name_scope('flattening') as scope:
                 self.flattenedLayer = tf.compat.v1.layers.Flatten(name="flattening")(x)
                 x = self.flattenedLayer
-                self.normalizedLayer = self.normalizeTensor(self.flattenedLayer)
-                x = self.normalizedLayer
 
             with tf.name_scope('fullyConnectedLayerOne') as scope:
                 print("x.shape", x.shape)
-                self.fc1InitialWeights = tf.random.truncated_normal([768, 100], stddev=1e-1, name="fc1InitialWeights")
+                self.fc1InitialWeights = tf.random.truncated_normal([126, 50], stddev=1e-1, name="fc1InitialWeights")
                 self.fc1Weight = tf.Variable(self.fc1InitialWeights, name="fc1Weights")
 
-                self.fc1InitialBias = tf.constant(0.0, shape=[100], name="fc1InitialBias")
+                self.fc1InitialBias = tf.constant(0.0, shape=[50], name="fc1InitialBias")
                 self.fc1Bias = tf.Variable(self.fc1InitialBias, trainable=True, name="fc1Bias")
 
                 matMulAddBias = tf.nn.bias_add(tf.matmul(x, self.fc1Weight), self.fc1Bias)
@@ -73,7 +113,7 @@ class NFramesModel:
 
             with tf.name_scope('fullyConnectedLayerTwo') as scope:
                 print("x.shape", x.shape)
-                self.fc2InitialWeights = tf.random.truncated_normal([100, 1], name="fc2InitialWeights")
+                self.fc2InitialWeights = tf.random.truncated_normal([50, 1], name="fc2InitialWeights")
                 self.fc2Weight = tf.Variable(self.fc2InitialWeights, name="fc2Weights")
 
                 self.fc2InitialBias = tf.constant(0.0, shape=[1], name="fc2InitialBias")
@@ -159,18 +199,18 @@ class NFramesModel:
 
             xShuffled = []
             yShuffled = []
-            for si in self.sess.run(shuffledIndices):
-            # for si in self.sess.run(indices):
+            # for si in self.sess.run(shuffledIndices):
+            for si in self.sess.run(indices):
                 xShuffled.append(xTrain[si])
                 yShuffled.append(yTrain[si])
 
             xNorm = normalizeData(xShuffled)
-            xNorm = numpy.reshape(xNorm, (-1, 151, 128, 1))
+            xNorm = numpy.reshape(xNorm, (-1, 4, 128, 1))
             # print("xNormReshaped shape", xNorm.shape)
-            yShuffled = numpy.array(yShuffled)
+            yShuffled = numpy.reshape(yShuffled, (-1, 1))
             # print("yShuffled shape bfore", yShuffled.shape, yShuffled[0])
 
-            yShuffled = yShuffled[:,[8]]
+            # yShuffled = yShuffled[:,[8]]
             # yShuffled = yShuffled[:,[0, 59, 8]]
             print("yShuffled shape", yShuffled.shape)
             self.sess.run(self.trainStep, feed_dict={self.X: xNorm, self.Y: yShuffled})
@@ -197,7 +237,7 @@ class NFramesModel:
             fc1 = self.sess.run(
                 self.fc1, 
                 feed_dict={self.X: xNorm, self.Y: yShuffled})
-            print("fc1", fc1, fc1.shape)
+            # print("fc1", fc1, fc1.shape)
             Ylogits = self.sess.run(
                 self.Ylogits, 
                 feed_dict={self.X: xNorm, self.Y: yShuffled})
@@ -233,8 +273,9 @@ class NFramesModel:
             meanAcc = numpy.mean(accHist)
             print('Epoch number {} Training Accuracy: {}'.format(i+1, meanAcc))
 
-            self.saveImages(self.pool2, "pool2", xNorm, yShuffled)
-            self.saveImages(self.pool1, "pool1", xNorm, yShuffled)
+            self.saveImages(self.X, self.charPair + "X", xNorm, yShuffled)
+            self.saveImages(self.pool1, self.charPair + "pool1", xNorm, yShuffled)
+            # self.saveImages(self.pool1, "pool1", xNorm, yShuffled)
 
             self.addSummary(xNorm, yShuffled, i)
 
