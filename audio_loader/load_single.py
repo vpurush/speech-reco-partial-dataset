@@ -2,14 +2,19 @@ from scipy.io import wavfile
 import numpy
 from matplotlib import pyplot as plt
 import librosa
+import noisereduce
 
-def loadWavFile(fileName, filePath, savePlot, maxAudioLength):
+def loadWavFile(fileName, filePath, savePlot, maxAudioLength, reduceNoise = True):
     # Read file
     # rate, data = wavfile.read(filePath)
     # print(filePath, rate, data.shape, "audio length", data.shape[0] / rate, data[0])
 
     data, rate = librosa.load(filePath, sr=None)
     # print(filePath, rate, data.shape, "librosa audio length", data.shape[0] / rate, data[0])
+    if reduceNoise:
+        noiseRemovedData = noisereduce.reduce_noise(audio_clip=data, noise_clip=data[0:10000], verbose=False)
+        noiseRemovedData = noisereduce.reduce_noise(audio_clip=noiseRemovedData, noise_clip=data[-10000:], verbose=False)
+        data = noiseRemovedData
 
 
     maxDataLength = int(maxAudioLength * rate)
