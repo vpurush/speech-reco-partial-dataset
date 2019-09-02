@@ -1,14 +1,16 @@
 import numpy
 from extract_feature import selectRandomKFromCombinations
+from matplotlib import pyplot as plt
 
 def compareTwoSpect(spect1, spect2, frameCount):
     (start1, end1) = findValidStartEnd(spect1)
     (start2, end2) = findValidStartEnd(spect2)
 
-    # print("start end", start1, end1, start2, end2, spect1.shape)
+    print("start end", start1, end1, start2, end2, spect1.shape)
 
     comparisonList = []
     for i in range(start1, end1 - frameCount + 1):
+        print("i", i)
         spect1NFrames = spect1[i : i + frameCount]
         # print("spect1NFrames", spect1NFrames.shape)
 
@@ -18,6 +20,9 @@ def compareTwoSpect(spect1, spect2, frameCount):
 
             comparisonScore = compareFrames(spect1NFrames, spect2NFrames)
             comparisonList.append((comparisonScore, i, j))
+
+        # if i > start1:
+        #     exit()
 
     # print("comparisonList", comparisonList)
     comparisonList = comparisonList[0:3]
@@ -97,6 +102,7 @@ def findBestPair(spectArrayLen, comparisonMatrix, index = 0, framePositionList =
 
 def findBestBatch(spectArray, frameCount):
     randomKCombinationList = selectRandomKFromCombinations(range(0, spectArray.shape[0]))
+    print("randomKCombinationList", randomKCombinationList, spectArray.shape[0])
     batchList = []
 
     for combi in randomKCombinationList:
@@ -128,7 +134,7 @@ def findBestBatch(spectArray, frameCount):
     # print("sortedBatchList", sortedBatchList, sortedBatchList.shape)
 
     output = numpy.array(sortedBatchList[:,1])
-    print("output", output, output.shape)
+    # print("output", output, output.shape)
 
     return output
         
@@ -138,41 +144,29 @@ def getSpectNFrames(spectArray, frameCount = 4):
     # print("spectArray.shape", spectArray.shape)
 
     return findBestBatch(spectArray, frameCount)
-    return
-
-    nFramesList = []
-    if spectArray.shape[0] > 1:
-        comparisonMatrix = getComparisonMatrix(spectArray, frameCount)
-        # return
-        sortedMasterComparisonList = findBestPair(spectArray.shape[0], comparisonMatrix)
-        bestPair = sortedMasterComparisonList[0]
-
-        for i in range(0, len(bestPair[2])):
-            spectIndex = bestPair[2][i]
-            startIndex = bestPair[1][i]
-            print("spectIndex", spectIndex)
-            nFrames = spectArray[spectIndex][spectIndex: spectIndex + frameCount]
-            nFramesList.append(nFrames)
-
-    return numpy.array(nFramesList)
 
 def frameContainsValidInfo(frame):
     var = numpy.var(frame)
     # print("var", var)
-    return var > 220
+    return var > 100
 
 def findValidStartEnd(spect):
     start = -1
     end = -1
     for i in range(0, spect.shape[0]):
+        # print("i", i)
         if (frameContainsValidInfo(spect[i, :])):
             start = i
             break
 
     for j in reversed(range(0, spect.shape[0])):
+        # print("j", j)
         if (frameContainsValidInfo(spect[j, :])):
             end = j
             break
+
+    if end-start > 30:
+        print("end-start", end-start)
 
     return (start, end)
 
@@ -183,5 +177,15 @@ def compareFrames(spect1NFrames, spect2NFrames):
     diff = spect1NFrames - spect2NFrames
     absDiff = abs(diff)
     mean = numpy.mean(absDiff)
+    # mx = 0
+    # for diff in absDiff:
+    #     mx = max()
+    # plt.imshow(spect1NFrames)
+    # plt.show()
+    # plt.imshow(spect2NFrames)
+    # plt.show()
+    maxMean = max(numpy.mean(absDiff, axis = 1))
+    countLargeDiff = numpy.sum(absDiff > 1.5)
     
-    return mean
+    print("absDiff", absDiff.shape, mean, maxMean, countLargeDiff)
+    return maxMean

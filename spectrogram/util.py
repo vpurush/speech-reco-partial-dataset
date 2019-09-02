@@ -34,7 +34,7 @@ def segmentSpectrogram(spectrogram, segmentLength, pading=True):
     i = 0
     while i <= int(spectrogram.shape[0] / segmentLength):
         segmentStart = int(i * segmentLength)
-        print("segmentStart", segmentStart)
+        # print("segmentStart", segmentStart)
         segment = spectrogram[segmentStart : segmentStart + segmentLength, :]
         # print("segment inside itr", segment.shape, segment)
 
@@ -48,7 +48,8 @@ def segmentSpectrogram(spectrogram, segmentLength, pading=True):
         i = i + 0.5
 
     numpySegments = numpy.array(segments)
-    print("segments", numpySegments.shape, numpySegments)
+    numpySegments = numpy.array(numpySegments[[itr for itr in range(0, numpySegments.shape[0]) if numpySegments[itr].shape[0] == numpySegments[0].shape[0]]])
+    print("segments.shape", numpySegments.shape)
     return numpySegments
 
 

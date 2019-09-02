@@ -9,14 +9,14 @@ def plotMultipleImages(fileName, data):
 
     j = 0
     for d in data:
-        print("d shape", d.shape)
+        # print("d shape", d.shape)
         numberOfChannels = d.shape[2]
         for i in range(0, numberOfChannels):
             imgData = d[:,:,i]
-            plt.imsave("./output_img/conv/" + fileName + "_" + str(j) + "_" + str(i) + ".png", imgData)
+            plt.imsave("./output_img/cnn/" + fileName + "_" + str(j) + "_" + str(i) + ".png", imgData)
         j = j + 1
 
-        if j == 2:
+        if j == 20:
             break
 
 
