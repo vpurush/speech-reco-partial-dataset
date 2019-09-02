@@ -10,7 +10,7 @@ def generateCombinations(arr, r):
 
 
 def getCombinationForSubArray(arr, position, r):
-    # print("getCombinationForSubArray start", arr)
+    print("getCombinationForSubArray start", arr, r)
     output = []
     if position < r:
         for i in range(0, arr.shape[0]):
@@ -19,7 +19,7 @@ def getCombinationForSubArray(arr, position, r):
             
             if position < r - 1:
                 childCombinationList = getCombinationForSubArray(newArr, position + 1, r)
-                # print("childCombinationList", childCombinationList)
+                print("childCombinationList", childCombinationList)
 
                 if childCombinationList.shape[0] > 0:
                     for childCombination in childCombinationList:
@@ -33,14 +33,21 @@ def getCombinationForSubArray(arr, position, r):
 
     return numpy.array(output)
 
-def selectRandomKFromCombinations(arr, kPercent = .2, kMin = 10, kMax = 50, r = 5):
+def selectRandomKFromCombinations(arr, kPercent = .2, kMin = 10, kMax = 25, r = 5):
+    r = min(r, len(arr))
+    print("r", r)
     allPosibleCombinations = generateCombinations(arr, r)
     n = allPosibleCombinations.shape[0]
 
     k = min(max(int(kPercent * n), kMin), kMax)
-    kRandomValues = random.sample(range(0, allPosibleCombinations.shape[0]), k)
-    # print("kRandomValues", len(kRandomValues))
-    return allPosibleCombinations[kRandomValues]
-    
+    print("allPosibleCombinations.shape[0], k", allPosibleCombinations.shape[0], k)
+
+    if allPosibleCombinations.shape[0] > k:
+        kRandomValues = random.sample(range(0, allPosibleCombinations.shape[0]), k)
+        # print("kRandomValues", len(kRandomValues))
+        return allPosibleCombinations[kRandomValues]
+    else:
+        return allPosibleCombinations
+
 # Usage
 # selectRandomKFromCombinations(range(0, 17))
