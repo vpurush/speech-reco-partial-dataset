@@ -148,27 +148,38 @@ def getSpectNFrames(spectArray, frameCount = 4):
 def frameContainsValidInfo(frame):
     var = numpy.var(frame)
     # print("var", var)
-    return var > 100
+    return var > 0.02
 
 def findValidStartEnd(spect):
     start = -1
     end = -1
     for i in range(0, spect.shape[0]):
         # print("i", i)
-        if (frameContainsValidInfo(spect[i, :])):
+        if (frameContainsValidInfo(spect[i, :]) and 
+            frameContainsValidInfo(spect[i + 1, :]) and 
+            frameContainsValidInfo(spect[i + 2, :])):
             start = i
             break
 
     for j in reversed(range(0, spect.shape[0])):
         # print("j", j)
-        if (frameContainsValidInfo(spect[j, :])):
+        if (frameContainsValidInfo(spect[j, :]) and 
+            frameContainsValidInfo(spect[j - 1, :]) and 
+            frameContainsValidInfo(spect[j - 2, :])):
             end = j
             break
 
     if end-start > 30:
-        print("end-start", end-start)
+        raise ValueError("Possible incorrect indentification of valid frames")
 
+    print("valid start end", start, end)
     return (start, end)
+
+def extractValidFrames(spect):
+    start, end = findValidStartEnd(spect)
+    validFrames = spect[start : end + 1]
+    print("validFrames", validFrames.shape)
+    return validFrames
 
 
 
