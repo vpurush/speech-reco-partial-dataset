@@ -35,7 +35,7 @@ def getCombinationForSubArray(arr, position, r):
 
 def selectRandomKFromCombinations(arr, kPercent = .2, kMin = 10, kMax = 25, r = 5):
     r = min(r, len(arr))
-    print("r", r)
+    # print("r", r)
     allPosibleCombinations = generateCombinations(arr, r)
     n = allPosibleCombinations.shape[0]
 

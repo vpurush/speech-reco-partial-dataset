@@ -61,7 +61,7 @@ testData = None
 
 
 def generateTrainingDataDictionary(tDataList):
-    twoCharSequenceList = ['ai']
+    twoCharSequenceList = ['ai', 'ch']
     trainingDataDict = {}
     for twoCharSequence in twoCharSequenceList:
         print("processsing", twoCharSequence)
@@ -189,8 +189,9 @@ def readTDataWithPandNorGenerate(forceGenerate = False):
 readTDataWithPandNorGenerate(True)
 
 
-nFramesModel = NFramesModel('ch')
-nFramesModel.trainOrRestore(tDataWithPandN['ch'][0], tDataWithPandN['ch'][1], True)
+key = 'ch'
+nFramesModel = NFramesModel(key)
+nFramesModel.trainOrRestore(tDataWithPandN[key][0], tDataWithPandN[key][1], True)
 
 def genTestData(key, segmentedSpectrogram):
     flattenedNFrameList = flattenNFrameList(segmentedSpectrogram)

@@ -212,7 +212,7 @@ class NFramesModel:
 
             # yShuffled = yShuffled[:,[8]]
             # yShuffled = yShuffled[:,[0, 59, 8]]
-            print("yShuffled shape", yShuffled.shape)
+            # print("yShuffled shape", yShuffled.shape)
             self.sess.run(self.trainStep, feed_dict={self.X: xNorm, self.Y: yShuffled})
             xoutput = self.sess.run(self.X, feed_dict={self.X: xNorm, self.Y: yShuffled})
             # print("X outpu", xoutput, xoutput.shape )
@@ -274,7 +274,7 @@ class NFramesModel:
             print('Epoch number {} Training Accuracy: {}'.format(i+1, meanAcc))
 
             self.saveImages(self.X, self.charPair + "X", xNorm, yShuffled)
-            self.saveImages(self.pool1, self.charPair + "pool1", xNorm, yShuffled)
+            # self.saveImages(self.pool1, self.charPair + "pool1", xNorm, yShuffled)
             # self.saveImages(self.pool1, "pool1", xNorm, yShuffled)
 
             self.addSummary(xNorm, yShuffled, i)

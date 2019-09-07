@@ -5,7 +5,7 @@ def plotImage(fileName, data):
 
     
 def plotMultipleImages(fileName, data):
-    print("data shape", data.shape)
+    # print("data shape", data.shape)
 
     j = 0
     for d in data:

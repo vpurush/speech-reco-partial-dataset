@@ -6,11 +6,11 @@ def compareTwoSpect(spect1, spect2, frameCount):
     (start1, end1) = findValidStartEnd(spect1)
     (start2, end2) = findValidStartEnd(spect2)
 
-    print("start end", start1, end1, start2, end2, spect1.shape)
+    # print("start end", start1, end1, start2, end2, spect1.shape)
 
     comparisonList = []
     for i in range(start1, end1 - frameCount + 1):
-        print("i", i)
+        # print("i", i)
         spect1NFrames = spect1[i : i + frameCount]
         # print("spect1NFrames", spect1NFrames.shape)
 
@@ -27,7 +27,7 @@ def compareTwoSpect(spect1, spect2, frameCount):
     # print("comparisonList", comparisonList)
     comparisonList = comparisonList[0:3]
     sortedComparisonList = sorted(comparisonList, key=lambda x: x[0])
-    # print("sortedComparisonList", sortedComparisonList)
+    print("sortedComparisonList", sortedComparisonList)
 
     return sortedComparisonList
 
@@ -47,7 +47,7 @@ def getComparisonMatrix(spectArray, frameCount):
                 comparisonMatrix[i][j] = comparison
                 comparisonMatrix[j][i] = comparisonInReverse
 
-    # print("comparisonMatrix", comparisonMatrix)
+    print("comparisonMatrix", comparisonMatrix)
     return comparisonMatrix
 
 def findBestPair(spectArrayLen, comparisonMatrix, index = 0, framePositionList = None, visited = []):
@@ -176,7 +176,7 @@ def findValidStartEnd(spect):
 def compareFrames(spect1NFrames, spect2NFrames):
     diff = spect1NFrames - spect2NFrames
     absDiff = abs(diff)
-    mean = numpy.mean(absDiff)
+    # mean = numpy.mean(absDiff)
     # mx = 0
     # for diff in absDiff:
     #     mx = max()
@@ -184,8 +184,10 @@ def compareFrames(spect1NFrames, spect2NFrames):
     # plt.show()
     # plt.imshow(spect2NFrames)
     # plt.show()
-    maxMean = max(numpy.mean(absDiff, axis = 1))
-    countLargeDiff = numpy.sum(absDiff > 1.5)
+    # maxMean = max(numpy.mean(absDiff, axis = 1))
+    # countLargeDiff = numpy.sum(absDiff > 1.5)
+    # expSum = numpy.sum(numpy.exp(absDiff))
+    twoPowSum = numpy.sum(numpy.power(1.2, absDiff))
     
-    print("absDiff", absDiff.shape, mean, maxMean, countLargeDiff)
-    return maxMean
+    # print("absDiff", absDiff.shape, mean, maxMean, countLargeDiff, expSum, twoPowSum)
+    return twoPowSum
