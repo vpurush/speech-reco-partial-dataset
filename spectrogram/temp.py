@@ -8,12 +8,12 @@ def plotFFTSpectrogram():
     
     data, rate = librosa.load('./recordings/_blank.wav', sr=None)
 
-    fftOutput = numpy.fft.fft(data)
+    fftOutput = numpy.fft.rfft(data)
     print("fftOutput", fftOutput, fftOutput.shape, len(data), rate)
     print("fftOutput.real", fftOutput.real)
     print("fftOutput.imag", fftOutput.imag)
-    sfft = scipy.fftpack.fft(data)
-    print("scipy.fftpack.fft", sfft, sfft.shape)
+    # sfft = scipy.fftpack.fft(data)
+    # print("scipy.fftpack.fft", sfft, sfft.shape)
     # plotImage(data, "_blank_wav")
 
     fig, ax = plt.subplots(1, 1)
@@ -28,7 +28,7 @@ def plotImage(data, fileName):
     plt.imsave("./output_img/fft/" + fileName + ".png", data)
 
 
-# plotFFTSpectrogram()
+plotFFTSpectrogram()
 
 def showWave(data, fileName):
     
@@ -55,4 +55,4 @@ def reduceNoise():
     print("aimData", aimData.shape, aimDataRate)
 
 
-reduceNoise()
+# reduceNoise()
