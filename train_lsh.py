@@ -50,10 +50,45 @@ def orchestration():
     for testSpect, testFileName in testData:
         print("testSpect.shape", testSpect.shape)
         print("testFileName", testFileName)
+        bucketList = []
         for frame in extractValidFrames(testSpect):
             reshapedValidFrame = frame.reshape(1, -1)
             bucket = lshObj.getBucketForData(reshapedValidFrame)
-            print("bucket", bucket)
+            # print("bucket", bucket)
+            bucketList.append(bucket)
+        
+        makePrediction(bucketList)
     # lshObj.getBucketForData(testData[0,0,0])
+
+
+def makePrediction(bucketList, minSupport = 0.7):
+    for bucket in bucketList:
+        bucketSize = len(bucket)
+        minSupportForBucket = int(minSupport * bucketSize)
+        print("processing new bucket", bucketSize)
+
+        bucketLabelCount = {}
+        processedTwoCharSequence = {}
+
+        for labelName in bucket:
+            word = labelName.split("_")[0]
+            word = word.split(".")[0]
+
+            for i in range(0, len(word) - 1):
+                twoCharSequence = word[i] + word[i+1]
+                
+                if twoCharSequence not in processedTwoCharSequence:
+                    processedTwoCharSequence[twoCharSequence] = 1
+                else:
+                    processedTwoCharSequence[twoCharSequence] += 1
+
+                # print("twoCharSequence", twoCharSequence)
+
+        twoCharSequencesWithMinSupport = {}
+        for twoCharSequence in processedTwoCharSequence:
+            if processedTwoCharSequence[twoCharSequence] >= minSupportForBucket:
+                twoCharSequencesWithMinSupport[twoCharSequence] = processedTwoCharSequence[twoCharSequence]
+
+        print("twoCharSequencesWithMinSupport", twoCharSequencesWithMinSupport)
 
 orchestration()

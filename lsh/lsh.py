@@ -37,10 +37,10 @@ class LSH:
 
         # print("labelCount", labelCount)
 
-        bucketWithMinSupport = []
+        bucketWithMinSupport = {}
         for labelName in labelCount:
             if labelCount[labelName][0] > self.minSupportCount:
-                bucketWithMinSupport.append(labelCount[labelName][0])
+                bucketWithMinSupport[labelName] = labelCount[labelName][0]
 
         return bucketWithMinSupport
         # return None
