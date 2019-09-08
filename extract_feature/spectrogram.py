@@ -171,7 +171,7 @@ def findValidStartEnd(spect):
             break
 
     if end-start > 70:
-        raise ValueError("Possible incorrect indentification of valid frames")
+        print("\n \n ----- Possible incorrect indentification of valid frames", end-start)
 
     print("valid start end", start, end)
     return (start, end)
