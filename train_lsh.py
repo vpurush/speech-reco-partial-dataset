@@ -42,9 +42,18 @@ def orchestration():
         for i in range(0, validFrameList.shape[0]):
             reshapedValidFrame = validFrameList[i].reshape(1, -1)
             # print("reshapedValidFrame", reshapedValidFrame)
-            lshObj.train(reshapedValidFrame, { "fileName": data[1], "frameIndex": i })
+            lshObj.train(reshapedValidFrame, { "name": data[1] + "_" + str(i), "frameIndex": i })
             # hr.train(validFrames[1:2], data[1])
     
-    print("lshObj", lshObj)
+    # print("lshObj", lshObj)
+
+    for testSpect, testFileName in testData:
+        print("testSpect.shape", testSpect.shape)
+        print("testFileName", testFileName)
+        for frame in extractValidFrames(testSpect):
+            reshapedValidFrame = frame.reshape(1, -1)
+            bucket = lshObj.getBucketForData(reshapedValidFrame)
+            print("bucket", bucket)
+    # lshObj.getBucketForData(testData[0,0,0])
 
 orchestration()
