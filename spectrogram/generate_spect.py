@@ -73,15 +73,15 @@ def generateSpectrogram(fileName, audioData, rate):
     # Here n_fft is frame length?
     n_fft = int(0.02 * rate)
     # hop_length=n_fft means no overlap between frames
-    # melPowerSpectrogram = libfeature.melspectrogram(audioData, rate, S=None, n_fft=n_fft, hop_length=int(n_fft / 2), n_mels=128)
+    melPowerSpectrogram = libfeature.melspectrogram(audioData, rate, S=None, n_fft=n_fft, hop_length=int(n_fft/2), n_mels=128)
     # print("melSpectrogram", melPowerSpectrogram.shape)
-    # melDBSpectrogram = librosa.power_to_db(melPowerSpectrogram, ref=numpy.max)
+    melDBSpectrogram = librosa.power_to_db(melPowerSpectrogram, ref=numpy.max)
     # print("melDBSpectrogram", melDBSpectrogram.shape)
 
-    # plotSpectrogram(fileName, 
-    #                 melDBSpectrogram, 
-    #                 False, 
-    #                 'melSpectrogram')
+    plotSpectrogram(fileName, 
+                    melDBSpectrogram, 
+                    False, 
+                    'melSpectrogram')
 
     # fig = plt.figure(figsize=(15, 4))
     # librosa.display.specshow(librosa.power_to_db(melPowerSpectrogram,
@@ -94,18 +94,19 @@ def generateSpectrogram(fileName, audioData, rate):
     # plt.close(fig)
 
 
-    chromogram = libfeature.chroma_stft(audioData, rate, n_fft=2048, hop_length=1024)
-    print("chromogram", chromogram, chromogram.shape, numpy.amin(chromogram), numpy.amax(chromogram))
-    fig, ax = plt.subplots(1, 1)
-    ax.imshow(chromogram, aspect='auto')
-    ax.set_xticks(numpy.arange(0, chromogram.shape[1], 10))
-    fig.suptitle(fileName)
-    fig.savefig("./output_img/spect/" + fileName + "_chromogram.png")
+    # chromogram = libfeature.chroma_stft(audioData, rate, n_fft=2048, hop_length=1024)
+    # print("chromogram", chromogram, chromogram.shape, numpy.amin(chromogram), numpy.amax(chromogram))
+    # fig, ax = plt.subplots(1, 1)
+    # ax.imshow(chromogram, aspect='auto')
+    # ax.set_xticks(numpy.arange(0, chromogram.shape[1], 10))
+    # fig.suptitle(fileName)
+    # fig.savefig("./output_img/spect/" + fileName + "_chromogram.png")
+    # chromogram = numpy.transpose(chromogram)
     
-    # melDBSpectrogram = numpy.transpose(melDBSpectrogram)
+    melDBSpectrogram = numpy.transpose(melDBSpectrogram)
     # print("melDBSpectrogram after transp", melDBSpectrogram.shape)
 
 
-    # return melDBSpectrogram
-    return numpy.transpose(chromogram)
+    return melDBSpectrogram
+    # return numpy.transpose(chromogram)
 
