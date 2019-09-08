@@ -107,3 +107,4 @@ output_img/*
 logs/*
 recordings/train/*
 recordings/test/*
+recordings/temp/*
