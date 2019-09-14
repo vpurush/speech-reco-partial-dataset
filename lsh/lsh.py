@@ -2,12 +2,12 @@ import numpy
 from lsh import Hasher
 
 class LSH:
-    def __init__(self, noOfHashers = 50, noOfHash = 20, dimension = 128):
+    def __init__(self, noOfHashers = 50, noOfHash = 16, dimension = 128):
         # noOfHashers determines the quality of this algorithm
         # noOfHash determines the possible number of buckets a hasher will map a data into
         self.noOfHashers = noOfHashers
         self.hasherList = []
-        self.minSupportPercentage = 0.5
+        self.minSupportPercentage = 0.7
         self.minSupportCount = round(self.minSupportPercentage * noOfHashers)
 
         for i in range(0, noOfHashers):
