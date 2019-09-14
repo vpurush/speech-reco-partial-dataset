@@ -4,7 +4,11 @@ from spectrogram import (generateSpectrogram,
 from extract_feature import (findValidStartEnd,
                             extractValidFrames)
 
-from lsh import (LSH)
+from lsh import (LSH, 
+                findTwoCharSequenceLikelyhood, 
+                generateAllPossibleCharSequencesFromLikelyhoodDict,
+                sortAllPossibleCharSequenceList,
+                findNearestWordList)
 import numpy
 import pickle
 import os
@@ -26,29 +30,47 @@ def loadAudio():
 
     return trainAudioDataAndRateArray, testAudioDataAndRateArray
 
+def loadOrTrainLSHModel(forceGenerate = False):
+    lshModel = None
+    if os.path.exists("./pickle_files/lshModel.pickle") and not forceGenerate:
+        print("LSH model found on disk")
+        pickleIn = open("./pickle_files/lshModel.pickle","rb")
+        lshModel = pickle.load(pickleIn)
+    else:
+        print("Training LSH model")
+        trainAudioDataAndRateArray = loadAllFiles("train", '')
+        trainingData = generateData(trainAudioDataAndRateArray)
+        
+        lshModel = LSH()
+        for data in trainingData:
+            print("fileName", data[1])
+            validFrameList = extractValidFrames(data[0])
+
+            for i in range(0, validFrameList.shape[0]):
+                reshapedValidFrame = validFrameList[i].reshape(1, -1)
+                # print("reshapedValidFrame", reshapedValidFrame)
+                lshModel.train(reshapedValidFrame, { "name": data[1] + "_" + str(i), "frameIndex": i })
+                # hr.train(validFrames[1:2], data[1])
+        
+        # print("lshModel", lshModel)
+
+        pickleOut = open("./pickle_files/lshModel.pickle","wb")
+        pickle.dump(lshModel, pickleOut)
+        pickleOut.close()
+
+    return lshModel
+
 
 def orchestration():
-    trainAudioDataAndRateArray, testAudioDataAndRateArray = loadAudio()
+    lshObj = loadOrTrainLSHModel(False)
 
-    trainingData = generateData(trainAudioDataAndRateArray)
+    testAudioDataAndRateArray = loadAllFiles("test", '')
     testData = generateData(testAudioDataAndRateArray)
 
-    lshObj = LSH()
 
-    for data in trainingData:
-        print("fileName", data[1])
-        validFrameList = extractValidFrames(data[0])
-
-        for i in range(0, validFrameList.shape[0]):
-            reshapedValidFrame = validFrameList[i].reshape(1, -1)
-            # print("reshapedValidFrame", reshapedValidFrame)
-            lshObj.train(reshapedValidFrame, { "name": data[1] + "_" + str(i), "frameIndex": i })
-            # hr.train(validFrames[1:2], data[1])
-    
-    # print("lshObj", lshObj)
 
     for testSpect, testFileName in testData:
-        print("testSpect.shape", testSpect.shape)
+        print("\n\n testSpect.shape", testSpect.shape)
         print("testFileName", testFileName)
         bucketList = []
         for frame in extractValidFrames(testSpect):
@@ -57,15 +79,22 @@ def orchestration():
             # print("bucket", bucket)
             bucketList.append(bucket)
         
-        makePrediction(bucketList)
+        bucketsOfTwoCharSequences = makePrediction(testFileName, bucketList)
+        sortedTwoCharSequenceLikelyhoodList = findTwoCharSequenceLikelyhood(bucketsOfTwoCharSequences)
+        allPossibleCharSeq = generateAllPossibleCharSequencesFromLikelyhoodDict(sortedTwoCharSequenceLikelyhoodList)
+        sortedAllPossibleCharSeq = sortAllPossibleCharSequenceList(allPossibleCharSeq)
+        nearestWordList = findNearestWordList(sortedAllPossibleCharSeq)
+        # print("sortedAllPossibleCharSeq", sortedAllPossibleCharSeq)
+        break
     # lshObj.getBucketForData(testData[0,0,0])
 
 
-def makePrediction(bucketList, minSupport = 0.7):
+def makePrediction(fileName, bucketList, minSupport = 0):
+    bucketsOfTwoCharSequences = []
     for bucket in bucketList:
         bucketSize = len(bucket)
         minSupportForBucket = int(minSupport * bucketSize)
-        print("processing new bucket", bucketSize)
+        # print("processing new bucket", bucketSize)
 
         bucketLabelCount = {}
         processedTwoCharSequence = {}
@@ -84,11 +113,15 @@ def makePrediction(bucketList, minSupport = 0.7):
 
                 # print("twoCharSequence", twoCharSequence)
 
-        twoCharSequencesWithMinSupport = {}
-        for twoCharSequence in processedTwoCharSequence:
-            if processedTwoCharSequence[twoCharSequence] >= minSupportForBucket:
-                twoCharSequencesWithMinSupport[twoCharSequence] = processedTwoCharSequence[twoCharSequence]
+        # twoCharSequencesWithMinSupport = {}
+        # for twoCharSequence in processedTwoCharSequence:
+        #     if processedTwoCharSequence[twoCharSequence] >= minSupportForBucket:
+        #         twoCharSequencesWithMinSupport[twoCharSequence] = processedTwoCharSequence[twoCharSequence]
 
-        print("twoCharSequencesWithMinSupport", twoCharSequencesWithMinSupport)
+        # print("twoCharSequencesWithMinSupport", twoCharSequencesWithMinSupport)
+        print("processedTwoCharSequence", fileName, processedTwoCharSequence)
+        bucketsOfTwoCharSequences.append(processedTwoCharSequence)
+    
+    return bucketsOfTwoCharSequences
 
 orchestration()
