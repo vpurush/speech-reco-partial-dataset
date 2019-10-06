@@ -8,7 +8,8 @@ from lsh import (LSH,
                 findTwoCharSequenceLikelyhood, 
                 generateAllPossibleCharSequencesFromLikelyhoodDict,
                 sortAllPossibleCharSequenceList,
-                findNearestWordList)
+                findNearestWordList,
+                sortNearestWordList)
 import numpy
 import pickle
 import os
@@ -24,11 +25,11 @@ def generateData(audioDataAndRateArray):
     return dataOutput
 
 
-def loadAudio():
-    trainAudioDataAndRateArray = loadAllFiles("train", '')
-    testAudioDataAndRateArray = loadAllFiles("test", '')
+# def loadAudio():
+#     trainAudioDataAndRateArray = loadAllFiles("train", '')
+#     testAudioDataAndRateArray = loadAllFiles("test_train", '')
 
-    return trainAudioDataAndRateArray, testAudioDataAndRateArray
+#     return trainAudioDataAndRateArray, testAudioDataAndRateArray
 
 def loadOrTrainLSHModel(forceGenerate = False):
     lshModel = None
@@ -64,14 +65,14 @@ def loadOrTrainLSHModel(forceGenerate = False):
 def orchestration():
     lshObj = loadOrTrainLSHModel(False)
 
-    testAudioDataAndRateArray = loadAllFiles("test", '')
+    testAudioDataAndRateArray = loadAllFiles("test_impossible", '')
     testData = generateData(testAudioDataAndRateArray)
 
 
-
+    testResults = []
     for testSpect, testFileName in testData:
-        print("\n\n testSpect.shape", testSpect.shape)
-        print("testFileName", testFileName)
+        # print("\n\n testSpect.shape", testSpect.shape)
+        print("\ntestFileName", testFileName)
         bucketList = []
         for frame in extractValidFrames(testSpect):
             reshapedValidFrame = frame.reshape(1, -1)
@@ -84,9 +85,12 @@ def orchestration():
         allPossibleCharSeq = generateAllPossibleCharSequencesFromLikelyhoodDict(sortedTwoCharSequenceLikelyhoodList)
         sortedAllPossibleCharSeq = sortAllPossibleCharSequenceList(allPossibleCharSeq)
         nearestWordList = findNearestWordList(sortedAllPossibleCharSeq)
+        sortedNearstWordList = sortNearestWordList(nearestWordList, sortedAllPossibleCharSeq)
+        testResults.append([testFileName, sortedNearstWordList])
         # print("sortedAllPossibleCharSeq", sortedAllPossibleCharSeq)
-        break
+        # break
     # lshObj.getBucketForData(testData[0,0,0])
+    calculateAccuracy(testResults)
 
 
 def makePrediction(fileName, bucketList, minSupport = 0):
@@ -119,9 +123,37 @@ def makePrediction(fileName, bucketList, minSupport = 0):
         #         twoCharSequencesWithMinSupport[twoCharSequence] = processedTwoCharSequence[twoCharSequence]
 
         # print("twoCharSequencesWithMinSupport", twoCharSequencesWithMinSupport)
-        print("processedTwoCharSequence", fileName, processedTwoCharSequence)
+        # print("processedTwoCharSequence", fileName, processedTwoCharSequence)
         bucketsOfTwoCharSequences.append(processedTwoCharSequence)
     
     return bucketsOfTwoCharSequences
+
+def calculateAccuracy(testResults):
+
+    matchCount = 0
+    top3MatchCount = 0
+    top5MatchCount = 0
+    for fileName, sortedNearestWordList in testResults:
+        
+        word = fileName.split("_")[0]
+        word = word.split(".")[0]
+        # print("word", word)
+
+        if word in sortedNearestWordList:
+            index = sortedNearestWordList.index(word)
+            # print("inside", index)
+
+            if index < 5:
+                top5MatchCount = top5MatchCount + 1
+            if index < 3:
+                top3MatchCount = top3MatchCount + 1
+            if index == 0:
+                matchCount = matchCount + 1
+
+    totalNoOfPredictions =  len(testResults)
+    print("Accuracy: ", matchCount / totalNoOfPredictions)
+    print("Top3 Accuracy ", top3MatchCount / totalNoOfPredictions)
+    print("Top5 Accuracy ", top5MatchCount / totalNoOfPredictions)
+
 
 orchestration()

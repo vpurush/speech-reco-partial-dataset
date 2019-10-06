@@ -173,13 +173,13 @@ def findValidStartEnd(spect):
     if end-start > 70:
         print("\n \n ----- Possible incorrect indentification of valid frames", end-start)
 
-    print("valid start end", start, end)
+    # print("valid start end", start, end)
     return (start, end)
 
 def extractValidFrames(spect):
     start, end = findValidStartEnd(spect)
     validFrames = spect[start : end + 1]
-    print("validFrames", validFrames.shape)
+    # print("validFrames", validFrames.shape)
     return validFrames
 
     # validFrames = []

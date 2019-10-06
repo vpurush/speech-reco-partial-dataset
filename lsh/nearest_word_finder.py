@@ -13,21 +13,31 @@ def findNearestWord(charSequence, cutoffValue):
         "badge",
         "ban",
         "bank",
+        "banish",
+        "bare",
+        "bamboo",
         "belong",
+        "bowl",
+        "bowling",
         "cage",
         "caring",
         "change",
         "chair",
         "chain",
+        "charm",
+        "charge",
         "clan",
         "cleaning",
         "coming",
         "cutting",
+        "dry",
         "edge",
+        "evict",
         "farming",
         "forge",
         "gain",
         "gaming",
+        "goal",
         "grading",
         "hack",
         "hand",
@@ -40,8 +50,13 @@ def findNearestWord(charSequence, cutoffValue):
         "jail",
         "joking",
         "large",
+        "lard",
+        "linga",
         "long",
         "man",
+        "pain",
+        "predict",
+        "punish",
         "racing",
         "raid",
         "rail",
@@ -53,6 +68,7 @@ def findNearestWord(charSequence, cutoffValue):
         "strength",
         "thing",
         "vain",
+        "vanish",
         "vase",
         "young"
     ], n = 1, cutoff=cutoffValue)
@@ -86,4 +102,5 @@ def findNearestWordList(charSequenceList):
         else:
             break
 
-    print("nearestWordList", nearestWordList)
+    # print("nearestWordList", nearestWordList)
+    return nearestWordList

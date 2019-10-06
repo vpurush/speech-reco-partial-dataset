@@ -28,6 +28,7 @@ def findTwoCharSequenceLikelyhood(bucketsOfTwoCharSequences, vicinityFrameCount 
                     twoCharSequenceLikelyhood[twoCharSequence] = vicinityList
 
                 filteredVicinity = filter(lambda x: x["start"] > bucketIdx - vicinityFrameCount, vicinityList)
+                # filteredVicinity = vicinityList
                 filteredVicinityList = list(filteredVicinity)
 
                 if (len(filteredVicinityList) > 0):
@@ -39,9 +40,9 @@ def findTwoCharSequenceLikelyhood(bucketsOfTwoCharSequences, vicinityFrameCount 
                     vicinityList.append(vicinity)
                     # print("vicinity not found")
 
-    print("\n\n twoCharSequenceLikelyhood")
-    for twoCharSequence in twoCharSequenceLikelyhood:
-        print("twoCharSequence", twoCharSequence, twoCharSequenceLikelyhood[twoCharSequence])
+    # print("\n\n twoCharSequenceLikelyhood")
+    # for twoCharSequence in twoCharSequenceLikelyhood:
+    #     print("twoCharSequence", twoCharSequence, twoCharSequenceLikelyhood[twoCharSequence])
 
     return twoCharSequenceLikelyhoodDictToList(twoCharSequenceLikelyhood)
 
@@ -58,13 +59,13 @@ def twoCharSequenceLikelyhoodDictToList(twoCharSequenceLikelyhoodDict):
             twoCharSequenceLikelyhoodList.append(vicinity)
 
     sortedTwoCharSequenceLikelyhoodList = sorted(twoCharSequenceLikelyhoodList, key=lambda x: x["start"])
-    print("\n\n sortedTwoCharSequenceLikelyhoodList")
-    for vicinity in sortedTwoCharSequenceLikelyhoodList:
-        print(vicinity)
+    # print("\n\n sortedTwoCharSequenceLikelyhoodList")
+    # for vicinity in sortedTwoCharSequenceLikelyhoodList:
+    #     print(vicinity)
 
     return sortedTwoCharSequenceLikelyhoodList
 
-def generateAllPossibleCharSequencesFromLikelyhoodDict(sortedTwoCharSequenceLikelyhoodList, start = 0):
+def generateAllPossibleCharSequencesFromLikelyhoodDict(sortedTwoCharSequenceLikelyhoodList, start = -1):
     # print("start", start)
     currentStart = None
     possibleCharSequences = []
@@ -77,9 +78,9 @@ def generateAllPossibleCharSequencesFromLikelyhoodDict(sortedTwoCharSequenceLike
             currentStart = twoCharSeqLikelyhood["start"]
             twoCharLikelyhoodSeqListToBeProcessed.append(twoCharSeqLikelyhood)
 
-    print("twoCharLikelyhoodSeqListToBeProcessed")
-    for twoCharSeqLikelyhood in twoCharLikelyhoodSeqListToBeProcessed:
-        print(twoCharSeqLikelyhood)
+    # print("twoCharLikelyhoodSeqListToBeProcessed")
+    # for twoCharSeqLikelyhood in twoCharLikelyhoodSeqListToBeProcessed:
+    #     print(twoCharSeqLikelyhood)
 
     if len(twoCharLikelyhoodSeqListToBeProcessed) > 0:
         innerPossibleCharSeqList = generateAllPossibleCharSequencesFromLikelyhoodDict(sortedTwoCharSequenceLikelyhoodList, currentStart)
@@ -102,7 +103,7 @@ def generateAllPossibleCharSequencesFromLikelyhoodDict(sortedTwoCharSequenceLike
 
         for twoCharSeqLikelyhood in twoCharLikelyhoodSeqListToBeProcessed:
             # print('twoCharSeqLikelyhood["start"] > start',  twoCharSeqLikelyhood["start"], start, twoCharSeqLikelyhood["start"] > start)
-            if (twoCharSeqLikelyhood["start"] > 0.5 * maxLikelyhood):
+            if (twoCharSeqLikelyhood["likelyhood"] > 0.5 * maxLikelyhood):
                 # print("currentStart", currentStart)
 
                 if len(innerPossibleCharSeqList) == 0:
@@ -143,6 +144,57 @@ def sortAllPossibleCharSequenceList(allPossibleCharSequenceList):
     mappedSortedAllPossibleCharSeqList = map(lambda x: x["charSequence"], sortedAllPossibleCharSeqList)
     return list(mappedSortedAllPossibleCharSeqList)
 
+
+# def sortNearestWordList(nearestWordList, sortedAllPossibleCharSeq):
+#     # print("aa", nearestWordList, sortedAllPossibleCharSeq)
+#     firstCharLikelyhood = {}
+#     for i in range(0, min(10, len(sortedAllPossibleCharSeq))):
+#         word = sortedAllPossibleCharSeq[i]
+#         firstChar = word[0]
+        
+#         if firstChar in firstCharLikelyhood:
+#             firstCharLikelyhood[firstChar] = firstCharLikelyhood[firstChar] + 1
+#         else:
+#             firstCharLikelyhood[firstChar] = 1
+
+#     sortedNearestWordList = sorted(nearestWordList, key=lambda x: -1 * firstCharLikelyhood[x[0]] if x[0] in firstCharLikelyhood else 100)
+#     # print("sortedNearestWordList", firstCharLikelyhood, nearestWordList, sortedNearestWordList)
+#     print("sortedNearestWordList", sortedNearestWordList)
+#     return sortedNearestWordList
+
+
+def sortLogic(sortedAllPossibleCharSeq):
+    first10PossibleCharSeq = sortedAllPossibleCharSeq[0:9]
+    def sortMethod(x):
+        score = 0
+        for charSeq in first10PossibleCharSeq:
+            if x in charSeq:
+                score = score + 10
+            else:
+                for xChar in x:
+                    if xChar in charSeq:
+                        score = score + 1
+
+        return score
+
+    return sortMethod
+    
+def sortNearestWordList(nearestWordList, sortedAllPossibleCharSeq):
+    # print("aa", nearestWordList, sortedAllPossibleCharSeq)
+    firstCharLikelyhood = {}
+    for i in range(0, min(10, len(sortedAllPossibleCharSeq))):
+        word = sortedAllPossibleCharSeq[i]
+        firstChar = word[0]
+        
+        if firstChar in firstCharLikelyhood:
+            firstCharLikelyhood[firstChar] = firstCharLikelyhood[firstChar] + 1
+        else:
+            firstCharLikelyhood[firstChar] = 1
+
+    sortedNearestWordList = sorted(nearestWordList, key=sortLogic(sortedAllPossibleCharSeq), reverse=True)
+    # print("sortedNearestWordList", firstCharLikelyhood, nearestWordList, sortedNearestWordList)
+    print("sortedNearestWordList", sortedNearestWordList)
+    return sortedNearestWordList
 
 
 
